@@ -1,10 +1,11 @@
 ///
 const version ="V_1.4.1";
+const num = 1;
 // 1.4.1 : ajouté des target="_blank" pour toutes les attributions
 
 window.onload = (event) => {
 	console.log("version : ", version);
-	document.title = network_name;
+	document.title = network_name + ";  N : " + num;
 	doTraceRoutes();
 	setZoomAndCenter();
 	init_guideposts_and_maps();
