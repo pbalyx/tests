@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8"> 
+    <title>Node_network_map V_1.4.1</title>
+			 
+	<link rel="stylesheet" type="text/css" href="leaflet_src/leaflet.css">
+	 
+	<script src="leaflet_src/leaflet-src.js" ></script>   <!-- version 1.6.0 -->
+	<script src="leaflet_src/easy-button.js" ></script> 
+
+	<style>
+	<!--	#map {height: calc(100vh - 20px); }-->
+	#main {
+		display: flex;
+		flex-direction: column;
+		height: 95vh; /* Ajuster la hauteur du cadre principal selon vos besoins */
+		border: 1px solid blue;
+
+	} 
+	.map {
+		flex: 1; /* Fait en sorte que la carte prenne tout l'espace disponible en hauteur */
+		border: 1px solid blue;
+ 	}
+	#info {
+		padding: 2px;
+		background-color: lightgray;
+	}
+	#info_status {
+		padding-left: 10px;
+		padding-right: 10px;
+		background-color: yellow;
+		margin-left: 10%;
+		float: left;
+	}
+	#info_dist {
+		margin-left: 2%;
+		padding-left: 10px;
+		padding-right: 10px;
+		background-color: white;
+		float: left;
+	}
+	#info_ascent {
+		margin-left: 4px;
+		padding-left: 10px;
+		padding-right: 10px;
+		background-color: white;
+		float: left;
+	}
+	
+	.leaflet-tooltip {
+		padding: 0px 4px 0px 4px ;
+		background-color: aquamarine;
+		font-size: 12px;
+		font-weight: bold;
+		line-height: 12px;
+		border: 1px solid blue;
+
+	}
+	.guidepost_tooltip {
+		padding: 0px 4px 0px 4px ;
+		background-color: rgba(170, 255, 255, .8);
+		font-size: 11px;
+		font-weight: bold;
+		line-height: 11px;
+		border: 1px solid blue;
+	}
+
+	.map_tooltip {
+		padding: 0px 4px 0px 4px ;
+		background-color: rgba(212, 255, 85, 1.0);
+		font-size: 11px;
+		font-weight: bold;
+		line-height: 11px;
+		border: 1px solid yellow;
+		text-align: center;
+
+	}
+
+    .easy-button-container {
+       display: flex;
+      flex-direction: column;
+	}
+	.easy-button-button.disabled {
+	  display: none;
+	}
+	.easy-button-button {
+	   padding:0px;
+		height: 30px;
+	   border: 1px solid blue;
+	}
+
+/* Surcharge de la règle will-change dans Leaflet */
+	.leaflet-zoom-anim .leaflet-zoom-animated {
+		will-change: auto !important;
+	}
+	.leaflet-fade-anim .leaflet-tile {
+		will-change: auto !important;
+	}
+
+	</style>
+
+</head>
+<body>
+	<div id="main">
+		<div id="map" class="map"></div>
+		<div id="info" >
+			<span id="info_status"></span>
+			<span id="info_dist"> </span>
+			<span id="info_ascent"> </span>
+		</div>
+	</div>
+	<!--init default values;-->
+	<script>
+		var network_name = "Node_network_map";
+		var Network_data_dir = "../network_data";
+		var mapCenter = "auto";
+		var zoom = 6;	
+		var network_router = false;
+		var test_button = false;
+		var guideposts = { "type": "FeatureCollection",   "features": [] }
+		var network_maps = { "type": "FeatureCollection",   "features": [] }
+		var routes = { "type": "FeatureCollection",   "features": [] }
+		var connections = { "type": "FeatureCollection",   "features": [] }
+
+	</script>	
+	
+<!--overwrite with scripts 
+Scripts créés dynamiquement pour avoir le choix du dossier Network_data
+	<script src= "../Network_data/config.txt" ></script> -->
+  <script>
+	
+    // Récupérer les paramètres de l'URL
+    const params = new URLSearchParams(window.location.search);
+
+    // Récupérer la valeur du query parameter "Network_data_dir"
+      var Network_data_dir_remote = params.get('Network_data_dir');
+//	  console.log("params", params);
+
+    // Utiliser la nouvelle valeur de Network_data_dir pour charger un script depcuis le répertoire
+	// sinon garder la valeur par défaut
+    if (Network_data_dir_remote) {
+		Network_data_dir = Network_data_dir_remote;
+	}
+//	console.log("Network_data_dir ",Network_data_dir);
+	const config_script = document.createElement('script');
+	config_script.src = Network_data_dir + '/config.js';
+	document.body.appendChild(config_script);
+	
+	const routes_script = document.createElement('script');
+	routes_script.src = Network_data_dir + '/routes.js';
+	document.body.appendChild(routes_script);
+	
+	const connections_script = document.createElement('script');
+	connections_script.src = Network_data_dir + '/connections.js';
+	document.body.appendChild(connections_script);
+	
+	const guideposts_script = document.createElement('script');
+	guideposts_script.src = Network_data_dir + '/guideposts.js';
+	document.body.appendChild(guideposts_script);
+	
+	const maps_script = document.createElement('script');
+	maps_script.src = Network_data_dir + '/network_maps.js';
+	document.body.appendChild(maps_script);
+	
+  </script>
+	
+
+	<script src= "./extra.js"></script>	 
+	<script src= "./Node_network_map.js"> </script>
+
+</body>
+</html>
