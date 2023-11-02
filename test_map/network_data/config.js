@@ -1,4 +1,4 @@
-network_name = "Réseau Basse Ardèche";
+network_name = "V_1.4.1 github";
 test_button = false;
 network_router = true;
 mapCenter = "44.53096, 4.39968"; 
