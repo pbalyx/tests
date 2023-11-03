@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+ 	<meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+
+   <title>Itinéraires test</title>
+    <style>
+		#main {
+			display: flex;
+			flex-direction: column;
+			height: 96vh; /* Ajuster la hauteur du cadre principal selon vos besoins */
+/*			border: 1px solid red;*/
+		} 
+		#header_div {
+			background-color: lavender;
+			font-size: 0.8em;
+/*			padding: 6px; 
+			padding-right: 20px; 
+			text-align: center; 	*/		
+		}
+		#titre_span {
+			display: block;
+		}
+		#b_help {
+
+		float: right;
+			font-size: 0.9em;
+			background-color: aqua;
+		}
+		#map {
+			flex: 1;
+		}
+		#iframeMap {
+			height: calc(100% - 6px);
+			width: calc(100% - 6px);
+		}
+		#help_div {
+			background-color: white;
+			border: 2px solid blue;
+			position: absolute;
+			left: 100px;
+			top: 100px;
+			float: right;
+			width: 40%;
+			display: none;
+		}
+		#help_header {
+			background-color: lightgray;
+			padding:10px;
+/*			padding-bottom: 20px;
+			padding-right: 40px;*/
+		}
+		#help_body {
+			background-color: white;
+			padding:10px;
+		}
+		
+		#b_close_help {
+			float: right;
+
+			background-color: white;		
+		}
+    </style> 
+  </head>
+<body>
+	<div id="main">
+		<div id= "help_div"> 
+		<div id= "help_header">
+			Mode d'emploi
+			<button id= "b_close_help"><b>X</b></button>
+		</div>
+		<div id= "help_body">
+			&nbsp&nbsp&nbsp Cette carte interactive permet d'éditer un trajet dans un réseau complet de sentiers et de carrefours.<br>
+			&nbsp&nbsp&nbsp Le réseau, encore incomplet, réunit les réseaux de sept communautés de communes du Sud Ardèche.<br>
+			&nbsp&nbsp&nbsp Pour éditer, bouton <img src="network_map/icons/icon-circuit.png" style="height:18px"> pour commencer.<br>
+			&nbsp&nbsp&nbsp Cliquer sur un des carrefours pour définir le départ.   <br>
+
+			&nbsp&nbsp&nbsp Cliquer ensuite de proche en proche sur les carrefours en orange pour construire le circuit. La longueur du trajet et les dénivelés sont indiqués au fur et à mesure au bas de l'écran.
+			<div>
+			&nbsp&nbsp&nbsp <img src="network_map/icons/icon-undo.png" style="height:16px"> pour revenir en arrière.</div>
+			<div>
+			&nbsp&nbsp&nbsp Lorsque le circuit est terminé,  
+			<img src="network_map/icons/icon-download.png" style="height:16px"> pour le télécharger en fichier .gpx,<img src="network_map/icons/icon-end.png" style="height:16px"> pour revenir à la carte.</div><br>   
+				&nbsp&nbsp&nbsp L'édition est plus facile en plein écran.
+
+			<button id= "b_fullscreen" style="float: right; background-color: lightgray">Plein écran -></button><br>
+			&nbsp&nbsp&nbsp (touche <i>Echap</i> pour quitter le mode plein écran).  		
+		
+		</div>
+		
+	</div>
+		<div id="header_div">
+			<span id: "titre_span">
+				<b><i>Construisez votre randonnée dans les réseaux de sentiers du Sud Ardèche</i></b>
+			</span>
+			<button id= "b_help"> Aide </button>
+		</div>
+		<div id= "map" >
+			<iframe id="iframeMap"  allowfullscreen src=".\network_map\node_network_map.html"></iframe>
+		</div> 
+	</div>
+	
+	<script>
+		var help_visible = false;
+		b_help.onclick = show_help;
+		b_close_help.onclick = show_help;
+		function show_help() {
+			help_visible = ! help_visible;
+			if (help_visible) { help_div.style.display = "block"; }
+			else { help_div.style.display = "none"; }	
+		}
+		b_fullscreen.onclick = setFullScreen;
+		function setFullScreen() {
+			document.getElementById('iframeMap').requestFullscreen();
+		}
+	</script>
+</body>
+</html>
+	
