@@ -4,7 +4,7 @@
     <meta charset="UTF-8"> 
 	<meta name="viewport" content="width=device-width, initial-scale=1.0"> 
 	
-	<title>Node_network_map V_1.4.1</title>
+	<title>Node_network_map V_1.4.2</title>
 			 
 	<link rel="stylesheet" type="text/css" href="leaflet_src/leaflet.css">
 	 
@@ -22,21 +22,22 @@
 	} 
 	.map {
 		flex: 1; /* Fait en sorte que la carte prenne tout l'espace disponible en hauteur */
-		border: 1px solid blue;
+/*		border: 1px solid blue;*/
  	}
 	#info {
 		padding: 2px;
 		background-color: lightgray;
+		font-size: 1em;
 	}
 	#info_status {
 		padding-left: 10px;
 		padding-right: 10px;
 		background-color: yellow;
-		margin-left: 10%;
+	/*	margin-left: 10%;*/
 		float: left;
 	}
 	#info_dist {
-		margin-left: 2%;
+		margin-left: 0%;
 		padding-left: 10px;
 		padding-right: 10px;
 		background-color: white;
@@ -52,7 +53,7 @@
 	
 	.leaflet-tooltip {
 		padding: 0px 4px 0px 4px ;
-		background-color: aquamarine;
+		background-color: red;
 		font-size: 2em;
 		font-weight: bold;
 		line-height: 2em;
@@ -99,6 +100,17 @@
 	.leaflet-fade-anim .leaflet-tile {
 		will-change: auto !important;
 	}
+	
+	
+@media screen and (max-width: 650px) {
+	#main {
+		height: 88vh; 
+	}
+	#info {
+		font-size: 0.8em;
+	}
+}
+
 
 	</style>
 

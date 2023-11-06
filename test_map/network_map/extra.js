@@ -4,7 +4,8 @@ function init_tests() {
 	// region tests
 
 	var b_test = L.easyButton( '<span>tests</span>', function(){
-		alert('test');
+//		alert('test');
+	test_screen();
 	//	test_elev();
 	//	test_dist();
 	//  test_bounds();
@@ -13,6 +14,13 @@ function init_tests() {
 //	doTraceRoutes();
 	});
 	 b_test.addTo(map);
+
+function test_screen() {
+	var w = window.innerWidth;
+	var h = window.innerHeight;
+	info_status.innerHTML = "width: " + w + " height:" + h;
+
+}
 
 	function test_elev() {
 		console.log("test");

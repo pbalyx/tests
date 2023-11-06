@@ -1,19 +1,19 @@
 ///
 const version ="V_1.4.2";
-const num = 2;
+const num = 4;
 // 1.4.1 : ajouté des target="_blank" pour toutes les attributions
 // 1.4.2 : version ok pour portables (Responsive web design)
 
 window.onload = (event) => {
 	console.log("version : ", version);
 	document.title = network_name + ", " + version + ",  N : " + num;
+
 	doTraceRoutes();
 	setZoomAndCenter();
 	init_guideposts_and_maps();
 	if (network_router) {init_network_router() };
 	if (test_button) {init_tests() };
 };
-
 
 //region Map Tiles
 
