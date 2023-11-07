@@ -1,12 +1,14 @@
 ///
 const version ="V_1.4.2";
-const num = 4;
+const num = 6;
 // 1.4.1 : ajouté des target="_blank" pour toutes les attributions
 // 1.4.2 : version ok pour portables (Responsive web design)
 
 window.onload = (event) => {
 	console.log("version : ", version);
-	document.title = network_name + ", " + version + ",  N : " + num;
+	document.title = network_loc + ", " + version + ",  N : " + num;
+//	document.title = network_name;
+	help_header_span.innerHTML = network_name;
 
 	doTraceRoutes();
 	setZoomAndCenter();
@@ -359,7 +361,17 @@ map.on("overlayadd", e => {
 //endregion
 
 	var circuitLayer = L.polyline([], {color: 'red'});
-	circuitLayer.addTo(map);		
+	circuitLayer.addTo(map);	
+
+var help_visible = false;
+b_help.onclick = show_help;
+b_close_help.onclick = show_help;
+function show_help() {
+	console.log('show help');
+	help_visible = ! help_visible;
+	if (help_visible) { help_div.style.display = "block"; }
+	else { help_div.style.display = "none"; }	
+}
 
 function init_network_router() {
 
@@ -473,7 +485,7 @@ const nextStyle = {
 var info_status = document.getElementById('info_status');
 var info_dist = document.getElementById('info_dist');
 var info_ascent = document.getElementById('info_ascent');
-
+var help_header_span = document.getElementById('help_header_span');
 let isTrackMode = false;
 var startNode = undefined;
 var currentNode = undefined;

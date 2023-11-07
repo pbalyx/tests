@@ -101,6 +101,42 @@
 		will-change: auto !important;
 	}
 	
+	#b_help {
+		position: absolute;
+		top: 20px;
+		left: 60px;
+		background-color: white;
+		z-index:1000;
+		font-size: 1.4em;
+		font-weight: bold;
+	}
+	#help_div {
+		background-color: white;
+		border: 2px solid blue;
+		position: absolute;
+		left: 100px;
+		top: 20px;
+		width: 50%;
+		font-size: 0.9em;
+	 	display: none;
+		z-index:2000;
+	}
+		#help_header {
+		background-color: lightgray;
+		padding:10px;
+
+	}
+	#help_body {
+		background-color: white;
+		padding:10px;
+	}
+	
+	#b_close_help {
+		float: right;
+
+		background-color: white;		
+	}
+
 	
 @media screen and (max-width: 650px) {
 	#main {
@@ -109,6 +145,10 @@
 	#info {
 		font-size: 0.8em;
 	}
+	#help_div {
+		width: 70vw;
+	}
+
 }
 
 
@@ -116,6 +156,27 @@
 
 </head>
 <body>
+	<div id= "help_div"> 
+		<div id= "help_header">
+			<span id="help_header_span">-</span>
+			<button id= "b_close_help"><b>X</b></button>
+		</div>
+		<div id= "help_body">
+			&nbsp&nbsp&nbsp Cette carte interactive permet d'éditer un trajet dans un réseau complet de sentiers et de carrefours.<br>
+			&nbsp&nbsp&nbsp Le réseau, encore incomplet, réunit les réseaux de sept communautés de communes du Sud Ardèche.<br>
+			&nbsp&nbsp&nbsp Pour éditer, bouton <img src="./icons/icon-circuit.png" style="height:18px"> pour commencer.<br>
+			&nbsp&nbsp&nbsp Cliquer sur un des carrefours pour définir le départ.   <br>
+
+			&nbsp&nbsp&nbsp Cliquer ensuite de proche en proche sur les carrefours en orange pour construire le circuit. La longueur du trajet et les dénivelés sont indiqués au fur et à mesure au bas de l'écran.
+			<div>
+			&nbsp&nbsp&nbsp <img src="./icons/icon-undo.png" style="height:16px"> pour revenir en arrière.</div>
+			<div>
+			&nbsp&nbsp&nbsp Lorsque le circuit est terminé,  
+			<img src="./icons/icon-download.png" style="height:16px"> pour le télécharger en fichier .gpx,<img src="./icons/icon-end.png" style="height:16px"> pour revenir à la carte.</div><br>   
+		
+		</div>
+
+	</div>
 	<div id="main">
 		<div id="map" class="map"></div>
 		<div id="info" >
@@ -123,10 +184,13 @@
 			<span id="info_dist"> </span>
 			<span id="info_ascent"> </span>
 		</div>
+		<button id="b_help">?<button>
 	</div>
+
 	<!--init default values;-->
 	<script>
 		var network_name = "Node_network_map";
+		var network_loc = "sandbox";
 		var Network_data_dir = "../network_data";
 		var mapCenter = "auto";
 		var zoom = 6;	
