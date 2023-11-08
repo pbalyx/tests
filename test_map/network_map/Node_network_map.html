@@ -4,7 +4,7 @@
     <meta charset="UTF-8"> 
 	<meta name="viewport" content="width=device-width, initial-scale=1.0"> 
 	
-	<title>Node_network_map V_1.4.2</title>
+	<title>Node_network_map V_1.4.3</title>
 			 
 	<link rel="stylesheet" type="text/css" href="leaflet_src/leaflet.css">
 	 
@@ -18,11 +18,9 @@
 		flex-direction: column;
 		height: 95vh; /* Ajuster la hauteur du cadre principal selon vos besoins */
 		border: 1px solid blue;
-
 	} 
 	.map {
 		flex: 1; /* Fait en sorte que la carte prenne tout l'espace disponible en hauteur */
-/*		border: 1px solid blue;*/
  	}
 	#info {
 		padding: 2px;
@@ -162,18 +160,20 @@
 			<button id= "b_close_help"><b>X</b></button>
 		</div>
 		<div id= "help_body">
-			&nbsp&nbsp&nbsp Cette carte interactive permet d'éditer un trajet dans un réseau complet de sentiers et de carrefours.<br>
-			&nbsp&nbsp&nbsp Le réseau, encore incomplet, réunit les réseaux de sept communautés de communes du Sud Ardèche.<br>
-			&nbsp&nbsp&nbsp Pour éditer, bouton <img src="./icons/icon-circuit.png" style="height:18px"> pour commencer.<br>
-			&nbsp&nbsp&nbsp Cliquer sur un des carrefours pour définir le départ.   <br>
+			<span id="network_info">Carte (encore incomplète) de sentiers balisés réunissant les réseaux de sept communautés de communes du Sud Ardèche</span><br><br>
+			
+			Cette carte permet d'éditer un itinéraire dans le réseau de sentiers et de carrefours.<br>			
+			<img src="./icons/icon-circuit.png" style="height:18px"> pour lancer ou quitter le mode édition.<br>
+			&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+			Cliquer sur un des carrefours pour définir le départ.   <br>
 
-			&nbsp&nbsp&nbsp Cliquer ensuite de proche en proche sur les carrefours en orange pour construire le circuit. La longueur du trajet et les dénivelés sont indiqués au fur et à mesure au bas de l'écran.
-			<div>
-			&nbsp&nbsp&nbsp <img src="./icons/icon-undo.png" style="height:16px"> pour revenir en arrière.</div>
-			<div>
-			&nbsp&nbsp&nbsp Lorsque le circuit est terminé,  
-			<img src="./icons/icon-download.png" style="height:16px"> pour le télécharger en fichier .gpx,<img src="./icons/icon-end.png" style="height:16px"> pour revenir à la carte.</div><br>   
-		
+			&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+			Cliquer ensuite de proche en proche sur les carrefours en orange pour construire le circuit.<br>
+			&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp La longueur du trajet et les dénivelés sont indiqués au fur et à mesure au bas de l'écran.<br>
+			
+			<img src="./icons/icon-undo.png" style="height:16px"> pour revenir en arrière.<br>
+			<img src="./icons/icon-download.png" style="height:16px"> pour télécharger l'itinéraire en fichier .gpx <br>
+			<img src="./icons/icon-end.png" style="height:16px"> pour revenir à zéro.<br> <br>  		
 		</div>
 
 	</div>

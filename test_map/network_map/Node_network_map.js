@@ -1,8 +1,9 @@
 ///
-const version ="V_1.4.2";
-const num = 6;
+const version ="V_1.4.3";
+const num = 2;
 // 1.4.1 : ajouté des target="_blank" pour toutes les attributions
-// 1.4.2 : version ok pour portables (Responsive web design)
+// 1.4.2 : version ok pour portables (Responsive web design) avec aide intégrée
+// 1.4.3 : modification du menu itinéraires
 
 window.onload = (event) => {
 	console.log("version : ", version);
@@ -700,32 +701,59 @@ function set_largeNodes(setBig) {
 	}
 }
 
-function set_circuitMode() {
+function buttons_show(_show) {
+	if(_show) {
+		b_undo.enable();
+		b_download.enable();
+		b_clear.enable();
+	} else {
+		b_undo.disable();
+		b_download.disable();
+		b_clear.disable();
+	}
+}
+
+function start_circuitMode() {
 	info_status.innerHTML = "Edition en cours";
 	info_status.style.backgroundColor = "gold";
-	isTrackMode = true;
 	set_largeNodes(true);
 	network_nodes_Layer.removeFrom(map);
 	network_nodes_Layer.addTo(map);
 	currentNode = undefined;
 	nextNodes.length = 0;
+	circuitNodes.length = 0;
 	circuitRoutes.length = 0;
 	circuitInfos.length = 0;
 	totalDist =0;
 }
 
-function end_circuitMode() {
-	isTrackMode = false;
-	set_largeNodes(false);
-	
-	circuitLayer.setLatLngs([]);
-	info_status.innerHTML = "";
-	info_dist.innerHTML = "";
-	info_ascent.innerHTML = "";
+function toggle_circuitMode() {
+	isTrackMode = !isTrackMode;
+	buttons_show(isTrackMode);
+	if (isTrackMode) {
+		if (nextNodes.length == 0) {
+			start_circuitMode();
+			console.log('démarrer circuit', );
+		} else {
+			for (var i = 0; i < nextNodes.length; i++) { 
+				nextNodes[i].setStyle(nextStyle);
+			}		
+			currentNode.setStyle(selectedStyle);
+			console.log('continuer circuit', );
+		}
+	} else {
+		set_largeNodes(false);
+		if (nextNodes.length == 0) {
+			console.log('circuit vide');
+			info_status.innerHTML = "";
+		} else {
+			console.log('circuit en cours');
+		}	
+	}
 }
 
 function undoLast() {
-//	console.log("undo");
+	console.log("undo", circuitNodes);
 	if (circuitNodes.length > 1) {
 		var lastNode = circuitNodes.pop();
 		circuitRoutes.pop();
@@ -733,8 +761,21 @@ function undoLast() {
 		next_circuit_node(circuitNodes[circuitNodes.length -1],true);	
 	} else { 
 		console.log("restart");
-		set_circuitMode();
+		start_circuitMode();
 	}
+}
+
+function clear_circuit() {
+	currentNode = undefined;
+	nextNodes.length = 0;
+	set_largeNodes(true);
+	circuitRoutes.length = 0;
+	circuitInfos.length = 0;
+	totalDist =0;
+	circuitLayer.setLatLngs([]);
+//	info_status.innerHTML = "";
+	info_dist.innerHTML = "";
+	info_ascent.innerHTML = "";
 }
 
 // endregion 
@@ -805,10 +846,7 @@ function downloadFile() {
 // region buttons
 
 var b_circuit = L.easyButton( '<img src="./icons/icon-circuit.png">', function(){
-	b_undo.enable();
-	b_download.enable();
-	b_end.enable();
-	set_circuitMode();
+	toggle_circuitMode();
 });
 
 var b_undo = L.easyButton( '<img src="./icons/icon-undo.png">', function(){
@@ -819,19 +857,18 @@ var b_download = L.easyButton( '<img src="./icons/icon-download.png">', function
 	downloadFile();
 });
 
-var b_end = L.easyButton( '<img src="./icons/icon-end.png">', function(){
-  end_circuitMode();
-b_undo.disable();
-b_download.disable();
-b_end.disable();
+var b_clear = L.easyButton( '<img src="./icons/icon-end.png">', function(){
+	if (confirm("Effacer le circuit en cours ?")) {
+		clear_circuit();
+	}
 });
 
-easyBar = L.easyBar([b_circuit, b_undo, b_download, b_end]);	
+easyBar = L.easyBar([b_circuit, b_undo, b_download, b_clear]);	
 easyBar.addTo(map);
 
 b_undo.disable();
 b_download.disable();
-b_end.disable();
+b_clear.disable();
 
 // endregion
 
