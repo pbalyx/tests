@@ -5,7 +5,8 @@ function init_tests() {
 
 	var b_test = L.easyButton( '<span>tests</span>', function(){
 //		alert('test');
-	test_screen();
+	test_num();
+	//	test_screen();
 	//	test_elev();
 	//	test_dist();
 	//  test_bounds();
@@ -14,7 +15,10 @@ function init_tests() {
 //	doTraceRoutes();
 	});
 	 b_test.addTo(map);
-
+	 
+function test_num() {
+	info_status.innerHTML = document.title;
+}
 function test_screen() {
 	var w = window.innerWidth;
 	var h = window.innerHeight;
