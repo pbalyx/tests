@@ -1,6 +1,6 @@
 ///
 const version ="V_1.4.3";
-const num = 2;
+const num = 4;
 // 1.4.1 : ajouté des target="_blank" pour toutes les attributions
 // 1.4.2 : version ok pour portables (Responsive web design) avec aide intégrée
 // 1.4.3 : modification du menu itinéraires
