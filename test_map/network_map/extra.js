@@ -17,7 +17,7 @@ function init_tests() {
 	 b_test.addTo(map);
 	 
 function test_num() {
-	info_status.innerHTML = document.title;
+	info_status.innerHTML = network_loc + ", " + version + ",  N : " + num;;
 }
 function test_screen() {
 	var w = window.innerWidth;

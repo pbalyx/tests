@@ -4,7 +4,7 @@
     <meta charset="UTF-8"> 
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"> 
 	
-	<title>Node_network_map V_1.4.3</title>
+	<title>Node_network_map V_1.4.4</title>
 			 
 	<link rel="stylesheet" type="text/css" href="leaflet_src/leaflet.css">
 	 
@@ -17,9 +17,15 @@
 		overscroll-behavior: none !important;	
 	}
 	#main {
+		position: fixed;
+		top: 3px;
+		left: 3px;
+		width: 98vw;
+		height: 98vh; /* Ajuster la hauteur du cadre principal selon vos besoins */
+
 		display: flex;
 		flex-direction: column;
-		height: 95vh; /* Ajuster la hauteur du cadre principal selon vos besoins */
+
 		border: 1px solid blue;
 	} 
 	.map {
@@ -93,6 +99,13 @@
 		height: 30px;
 	   border: 1px solid blue;
 	}
+	
+	#confirm_dialog {
+		text-align: center;
+		line-height: 1.8em;
+		border: 3px solid blue;
+	
+	}
 
 /* Surcharge de la règle will-change dans Leaflet */
 	.leaflet-zoom-anim .leaflet-zoom-animated {
@@ -104,8 +117,8 @@
 	
 	#b_help {
 		position: absolute;
-		top: 20px;
-		left: 60px;
+		top: 12px;
+		left: 50px;
 		background-color: white;
 		z-index:1000;
 		font-size: 1.4em;
@@ -134,26 +147,28 @@
 	
 	#b_close_help {
 		float: right;
-
 		background-color: white;		
 	}
-
+	
 	
 @media screen and (max-width: 650px) {
 	#main {
-		height: 88vh; 
+		height: 88vh;
+		width: 97vw;
 	}
 	#info {
 		font-size: 0.8em;
 	}
 	#help_div {
-		width: 70vw;
+		font-size: 0.8em;
+		top: 60px;
+		left: 52px;
+		width: 84vw;
 	}
 
 }
 
-
-	</style>
+</style>
 
 </head>
 <body>
@@ -163,23 +178,26 @@
 			<button id= "b_close_help"><b>X</b></button>
 		</div>
 		<div id= "help_body">
-			<span id="network_info">Carte (encore incomplète) de sentiers balisés réunissant les réseaux de sept communautés de communes du Sud Ardèche</span><br><br>
+			<span id="help_network_info">--</span><br><br>
 			
-			Cette carte permet d'éditer un itinéraire dans le réseau de sentiers et de carrefours.<br>			
-			<img src="./icons/icon-circuit.png" style="height:18px"> pour lancer ou quitter le mode édition.<br>
-			&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
-			Cliquer sur un des carrefours pour définir le départ.   <br>
+			<div id="help_circuit" style="display: none">
+				Cette carte permet d'éditer un itinéraire dans le réseau de sentiers et de carrefours.<br>			
+				<img src="./icons/icon-circuit.png" style="height:18px"> pour lancer ou quitter le mode édition.<br>
+				&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+				Cliquer sur un des carrefours pour définir le départ.   <br>
 
-			&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
-			Cliquer ensuite de proche en proche sur les carrefours en orange pour construire le circuit.<br>
-			&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp La longueur du trajet et les dénivelés sont indiqués au fur et à mesure au bas de l'écran.<br>
-			
-			<img src="./icons/icon-undo.png" style="height:16px"> pour revenir en arrière.<br>
-			<img src="./icons/icon-download.png" style="height:16px"> pour télécharger l'itinéraire en fichier .gpx <br>
-			<img src="./icons/icon-end.png" style="height:16px"> pour revenir à zéro.<br> <br>  		
+				&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+				Cliquer ensuite de proche en proche sur les carrefours en orange pour construire le circuit.<br>
+				&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp La longueur du trajet et les dénivelés sont indiqués au fur et à mesure au bas de l'écran.<br>
+				
+				<img src="./icons/icon-undo.png" style="height:16px"> pour revenir en arrière.<br>
+				<img src="./icons/icon-download.png" style="height:16px"> pour télécharger l'itinéraire en fichier .gpx <br>
+				<img src="./icons/icon-end.png" style="height:16px"> pour revenir à zéro.<br> <br>
+			</div>
 		</div>
 
 	</div>
+
 	<div id="main">
 		<div id="map" class="map"></div>
 		<div id="info" >
@@ -189,10 +207,16 @@
 		</div>
 		<button id="b_help">?<button>
 	</div>
+	<dialog id="confirm_dialog">
+		Effacer l'itinéraire en cours ?<br>
+		<button id="b_ok" >Effacer</button>&nbsp&nbsp&nbsp
+		<button id="b_cancel" >Annuler</button>	
+	</dialog>
 
 	<!--init default values;-->
 	<script>
 		var network_name = "Node_network_map";
+		var network_info = "";
 		var network_loc = "sandbox";
 		var Network_data_dir = "../network_data";
 		var mapCenter = "auto";
