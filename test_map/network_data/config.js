@@ -1,4 +1,5 @@
 network_name = " Réseau Ardèche Sud ";
+network_info = "Carte (encore incomplète) de sentiers balisés réunissant les réseaux de sept communautés de communes du Sud Ardèche";
 network_loc = " Github ";
 test_button = true;
 network_router = true;

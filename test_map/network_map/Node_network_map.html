@@ -4,7 +4,7 @@
     <meta charset="UTF-8"> 
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"> 
 	
-	<title>Node_network_map V_1.4.4</title>
+	<title>Node_network_map V_1.5.0</title>
 			 
 	<link rel="stylesheet" type="text/css" href="leaflet_src/leaflet.css">
 	 
@@ -12,7 +12,6 @@
 	<script src="leaflet_src/easy-button.js" ></script> 
 
 	<style>
-	<!--	#map {height: calc(100vh - 20px); }-->
 	html {
 		overscroll-behavior: none !important;	
 	}
@@ -22,10 +21,8 @@
 		left: 3px;
 		width: 98vw;
 		height: 98vh; /* Ajuster la hauteur du cadre principal selon vos besoins */
-
 		display: flex;
 		flex-direction: column;
-
 		border: 1px solid blue;
 	} 
 	.map {
@@ -60,10 +57,10 @@
 	
 	.leaflet-tooltip {
 		padding: 0px 4px 0px 4px ;
-		background-color: red;
-		font-size: 2em;
+		background-color: rgba(170, 255, 255, .8);
+		font-size: 1em;
 		font-weight: bold;
-		line-height: 2em;
+		line-height: 1.1em;
 		border: 1px solid blue;
 
 	}
@@ -224,6 +221,7 @@
 		var network_router = false;
 		var test_button = false;
 		var guideposts = { "type": "FeatureCollection",   "features": [] }
+		var network_nodes = { "type": "FeatureCollection",   "features": [] }
 		var network_maps = { "type": "FeatureCollection",   "features": [] }
 		var routes = { "type": "FeatureCollection",   "features": [] }
 		var connections = { "type": "FeatureCollection",   "features": [] }
@@ -268,9 +266,12 @@ Scripts créés dynamiquement pour avoir le choix du dossier Network_data
 	maps_script.src = Network_data_dir + '/network_maps.js';
 	document.body.appendChild(maps_script);
 	
-  </script>
+ 	const network_nodes_script = document.createElement('script');
+	network_nodes_script.src = Network_data_dir + '/network_nodes.js';
+	document.body.appendChild(network_nodes_script);
 	
-
+ </script>
+	
 	<script src= "./extra.js"></script>	 
 	<script src= "./Node_network_map.js"> </script>
 

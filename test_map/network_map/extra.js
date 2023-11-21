@@ -4,8 +4,8 @@ function init_tests() {
 	// region tests
 
 	var b_test = L.easyButton( '<span>tests</span>', function(){
-//		alert('test');
-	test_num();
+		alert('test');
+//	test_();
 	//	test_screen();
 	//	test_elev();
 	//	test_dist();
@@ -15,6 +15,20 @@ function init_tests() {
 //	doTraceRoutes();
 	});
 	 b_test.addTo(map);
+	 
+function test_() {
+//info_status.innerHTML = node
+}	 
+	
+function distance(pt1, pt2) {
+	var latLng1 = L.latLng(pt1[1], pt1[0]);
+	var latLng2 = L.latLng(pt2[1], pt2[0]);
+	var dist = latLng2.distanceTo(latLng1);
+	return dist;
+}
+
+var nb_ok=0;
+	
 	 
 function test_num() {
 	info_status.innerHTML = network_loc + ", " + version + ",  N : " + num;;

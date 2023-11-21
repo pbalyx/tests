@@ -1,9 +1,12 @@
 ///
-const version ="V_1.4.4";
-const num = 10;
+const version ="V_1.5.0";
+const num = 0;
 // 1.4.1 : ajouté des target="_blank" pour toutes les attributions
 // 1.4.2 : version ok pour portables (Responsive web design) avec aide intégrée
 // 1.4.3 : modification du menu itinéraires
+// 1.5.0 : 
+//		- chargement des network_nodes depuis network_map => avoir les noms sans les guideposts
+//		- intégration du circuit au script, seul le bouton disparaît
 
 window.onload = (event) => {
 	console.log("version : ", version);
@@ -15,8 +18,10 @@ window.onload = (event) => {
 	doTraceRoutes();
 	setZoomAndCenter();
 	init_guideposts_and_maps();
+	init_network_nodes();
+
 	if (network_router) {
-		init_network_router();
+///		init_network_router();
 		help_circuit.style.display= "block";
 	};
 	if (test_button) {init_tests() };
@@ -57,7 +62,7 @@ var OSMLayer = L.tileLayer('https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.
 	
 	var routesStyle = {
 		"color": "darkblue",
-		"weight": 3,
+		"weight": 2,
 		"opacity": 1
 	};
 	
@@ -109,7 +114,7 @@ var guidepostIcon = L.icon({
     tooltipAnchor: [0, -22]
 });
 
-var guidepostsLayer = L.geoJSON(guideposts, {   //this layer disappears when moving the map
+var guidepostsLayer = L.geoJSON([], {   //this layer disappears when moving the map
 		pointToLayer: function(feature, latlng) {
 			label ="*";
 			if (feature.properties.name) {
@@ -125,7 +130,7 @@ var guidepostsLayer = L.geoJSON(guideposts, {   //this layer disappears when mov
 			//	opacity: 0.8
 			}).openTooltip();
 		}
-	});; 
+	});
 
 var guidepostsArray = [];
 var guidepostsLayer_tmp = new L.GeoJSON();
@@ -142,7 +147,7 @@ function init_guideposts_and_maps() {
 	network_mapsArray = network_maps.features;	
 	update_guidepostLayer();
 	update_network_mapsLayer();
-	junctionLayer.addData(guideposts);
+//	junctionLayer.addData(guideposts);
 }
 
 function update_guidepostLayer() {
@@ -202,21 +207,108 @@ var network_mapsLayer = L.geoJSON([], {   //this layer disappears when moving th
 
 });
 
-var junctionLayer = L.geoJSON([], {   //this layer remains when moving the map
+/* var junctionLayer = L.geoJSON([], {   //this layer remains when moving the map
 	//default layer to mark junction from guideposts when moving the Map
 	//replaced by network_nodes_Layer if network_router = true
+	pointToLayer: function(feature, latlng) {
+		return new L.CircleMarker(latlng, {
+			radius: 6,
+			fillColor: "lightblue",
+			fillOpacity: 1,
+			color: "darkblue",
+			weight: 1
+		});
+	}
+});*/
+
+// endregion
+
+// region network_nodes
+
+var network_nodes_Layer = L.geoJSON([], {
 	pointToLayer: function(feature, latlng) {
 		return new L.CircleMarker(latlng, {
 			radius: 4,
 			fillColor: "lightblue",
 			fillOpacity: 1,
 			color: "darkblue",
-			weight: 2
+			weight: 1
 		});
 	}
 });
 
-// endregion
+function init_network_nodes() {
+	network_nodes_Layer.addData(network_nodes.features);
+	// Register event handlers for each feature
+	network_nodes_Layer.eachLayer(function(layer) {
+		layer.on('click', onNetworkNodeClick);
+		layer.on('mouseover', onNetworkNode_over);
+		layer.on('mouseout', onNetworkNode_out);
+	});
+}
+
+function onNetworkNodeClick(e) {
+	var newNodeLayer = e.target;  
+	var mouseEvent = e.originalEvent;
+	mouseEvent.preventDefault();	
+	//var lwn_ref = newNodeLayer.feature.properties.lwn_ref;
+//	console.dir("newNodeLayer", newNodeLayer);
+	if (isTrackMode) {
+///		newNodeLayer.unbindPopup();
+		next_circuit_node(newNodeLayer, false);		
+	} else {
+//		var popupContent = "truc";
+//		newNodeLayer.bindPopup(popupContent).openPopup();	
+	}
+}
+
+function onNetworkNode_over(e) {
+	var tmpNodeLayer = e.target;  
+	var mouseEvent = e.originalEvent;
+	mouseEvent.preventDefault();	
+	var popupContent = tmpNodeLayer.feature.properties.lwn_ref;
+//	var popupContent = "truc";
+	if (!guideposts_visible) {
+		tmpNodeLayer.bindTooltip(popupContent, {direction: 'center', offset: L.point({x: 0, y: -15})}).openTooltip();
+	}
+//	console.log(tmpNodeLayer.feature.properties);
+}
+
+function onNetworkNode_out(e) {
+	var tmpNodeLayer = e.target;  
+	var mouseEvent = e.originalEvent;
+	mouseEvent.preventDefault();	
+//	var popupContent = tmpNodeLayer.feature.properties.name;
+		tmpNodeLayer.closeTooltip();	
+//	console.log(tmpNodeLayer.feature.properties);
+}
+
+// region network_nodes Styles
+
+const normalStyle = {
+  radius: 4,
+  fillColor: 'lightblue',
+  color: 'darkblue'
+};
+const bigStyle = {
+  radius: 10,
+  fillColor: 'lightblue',
+  color: 'darkblue'
+};
+const selectedStyle = {
+  radius: 10,
+  fillColor: 'green',
+  color: 'green'
+};
+const nextStyle = {
+  radius: 10,
+  fillColor: 'orange',
+  color: 'red'
+};
+
+//endregion
+
+//endregion
 
 // region Map
 function setZoomAndCenter() {
@@ -243,7 +335,6 @@ function setZoomAndCenter() {
 //	console.log(mapCenter, '   ',centerlatLng);
 }
 
-var network_nodes_Layer = new L.LayerGroup([]);;
 
 var map = L.map('map', {
 	center: [46.6, 2.5],
@@ -252,11 +343,11 @@ var map = L.map('map', {
 });
 L.control.scale({maxWidth: 200, imperial: false}).addTo(map);
 
-junctionLayer.addTo(map);
+	network_nodes_Layer.addTo(map);
 
 //endregion
 
-// region layerControl and actions
+// region layersControl and actions
 
 var baseMaps = {
     "OpenTopoMap": OTMLayer,
@@ -365,9 +456,7 @@ map.on("overlayadd", e => {
 
 //endregion
 
-	var circuitLayer = L.polyline([], {color: 'red'});
-	circuitLayer.addTo(map);	
-
+// region help
 var help_visible = false;
 b_help.onclick = show_help;
 b_close_help.onclick = show_help;
@@ -378,114 +467,15 @@ function show_help() {
 	else { help_div.style.display = "none"; }	
 }
 
-function init_network_router() {
-
-//region network_nodes_Layer
-
-	var network_nodes_Array =[];
-
-//	console.log(network_nodes.features.length);
-	cleanMultiLineRoutes();	
-	find_network_nodes();
-	fill_network_nodes_Layer();
-	
-	function cleanMultiLineRoutes() {
-		routesLayer.eachLayer(function(layer) {
-			if (layer.feature.geometry.type == 'MultiLineString') {
-				var oldCoords = layer.feature.geometry.coordinates;
-				var newCoords = [];
-				for (var i = 0; i < oldCoords.length; i++) {
-					newCoords = newCoords.concat(oldCoords[i]);
-				}
-				layer.feature.geometry.type = "LineString";
-				layer.feature.geometry.coordinates = newCoords;
-//				console.dir(layer.feature.geometry);				
-			};
-		});
-
-	}
-
-		function indexLatLngOf(_array, _point) {
-//			console.log("LatLng", L.latLng(_point),L.latLng(_array[0]));
-			for (var i = 0; i < _array.length; i++) { 
-				// warning : equality of LongLat not LatLong
-				if (L.latLng(_point).equals(L.latLng(_array[i]))) {
-					return i; 
-				}					
-			}
-			return -1;
-		}
-
-		function find_network_nodes() {
-		//	allJunctions = [];
-			network_nodes_Array = [];
-			routesLayer.eachLayer(function(layer) {
-				var routeName = layer.feature.properties.name;
-				var coordArray = layer.feature.geometry.coordinates;
-		//		var firstPoint = L.GeoJSON.coordsToLatLng(coordArray[0] );
-		//		var lastPoint = L.GeoJSON.coordsToLatLng(coordArray[coordArray.length - 1] );
-				var firstPoint = coordArray[0];
-				var lastPoint = coordArray[coordArray.length - 1];
-				
-				if (indexLatLngOf(network_nodes_Array, firstPoint) < 0) {
-					network_nodes_Array.push(firstPoint);
-				}
-				if (indexLatLngOf(network_nodes_Array, lastPoint) < 0) {
-					network_nodes_Array.push(lastPoint);
-				}
-			});
-		}
-
-	function fill_network_nodes_Layer() {
-		for (var i = 0; i < network_nodes_Array.length; i++ ) {
-			L.circleMarker(L.GeoJSON.coordsToLatLng(network_nodes_Array[i]), {
-				radius: 4,
-				fillColor: "lightblue",
-	//			fillColor: "red",
-				fillOpacity: 1,
-				color: "darkblue",
-	//			color: "red",
-				weight: 2			
-			}).addTo(network_nodes_Layer);
-		}
-
-	}
-
-	network_nodes_Layer.addTo(map);
-	junctionLayer.removeFrom(map);
-
-
-//endregion
-
-// region network_nodes Styles
-
-const normalStyle = {
-  radius: 4,
-  fillColor: 'lightblue',
-  color: 'darkblue'
-};
-const bigStyle = {
-  radius: 10,
-  fillColor: 'lightblue',
-  color: 'darkblue'
-};
-const selectedStyle = {
-  radius: 10,
-  fillColor: 'green',
-  color: 'green'
-};
-const nextStyle = {
-  radius: 10,
-  fillColor: 'orange',
-  color: 'red'
-};
-
 //endregion
 
 // region circuit
-
 	// manual routing
-	var circuitRoutes = [];
+
+var circuitLayer = L.polyline([], {color: 'red'});
+circuitLayer.addTo(map);	
+
+var circuitRoutes = [];
 
 var info_status = document.getElementById('info_status');
 var info_dist = document.getElementById('info_dist');
@@ -523,7 +513,6 @@ function _dist(_circuitRoute) {
   }
 	return _totDist / 1000;
 }
-
 
 function _calcTotDist() {
 	totalDist =0;
@@ -582,9 +571,6 @@ function _calcDenivSmooth() {
 		if (diffElev >= 0) { denivPlus += diffElev }
 		else { denivMoins -= diffElev}
 	}
-	
-	
-
 }
 
 function updateInfo() {
@@ -678,26 +664,6 @@ function next_circuit_node(_newNodeLayer, undo) {
 	}
 }
 
-    // Event handler for click on a feature
-function onNetworkNodeClick(e) {
-	var newNodeLayer = e.target;  
-	var mouseEvent = e.originalEvent;
-	mouseEvent.preventDefault();	
-	//var lwn_ref = newNodeLayer.feature.properties.lwn_ref;
-//	console.dir("newNodeLayer", newNodeLayer);
-	if (isTrackMode) {
-		newNodeLayer.unbindPopup();
-		next_circuit_node(newNodeLayer, false);		
-	} else {
-//		var popupContent = lwn_ref;
-//		newNodeLayer.bindPopup(popupContent).openPopup();	
-	}
-}
-
-// Register the click event handler for each feature
-network_nodes_Layer.eachLayer(function(layer) {
-	layer.on('click', onNetworkNodeClick);
-});
 
 function set_largeNodes(setBig) {
 	if(setBig) {
@@ -890,8 +856,6 @@ function delete_and_close() {
 	confirm_dialog.close();
 }
 
-
-
 easyBar = L.easyBar([b_circuit, b_undo, b_download, b_clear]);	
 easyBar.addTo(map);
 
@@ -900,8 +864,6 @@ b_download.disable();
 b_clear.disable();
 
 // endregion
-
-}
 
 
 
