@@ -10,8 +10,8 @@ const num = 0;
 
 window.onload = (event) => {
 	console.log("version : ", version);
-	document.title = network_loc + ", " + version + ",  N : " + num;
-//	document.title = network_name;
+//	document.title = network_loc + ", " + version + ",  N : " + num;
+	document.title = network_name;
 	help_header_span.innerHTML = network_name;
 	help_network_info.innerHTML = network_info;
 
@@ -267,6 +267,9 @@ function onNetworkNode_over(e) {
 	var mouseEvent = e.originalEvent;
 	mouseEvent.preventDefault();	
 	var popupContent = tmpNodeLayer.feature.properties.lwn_ref;
+	if (!popupContent) { popupContent = tmpNodeLayer.feature.properties.lwn_name };
+	if (!popupContent) { popupContent = '***' };
+//	console.log(popupContent, tmpNodeLayer.feature.properties.lwn_name);
 //	var popupContent = "truc";
 	if (!guideposts_visible) {
 		tmpNodeLayer.bindTooltip(popupContent, {direction: 'center', offset: L.point({x: 0, y: -15})}).openTooltip();
