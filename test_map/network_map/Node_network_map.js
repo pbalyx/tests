@@ -592,9 +592,9 @@ function updateInfo() {
 
 function selectNextPoint(routePoint) {
 	var dist;
+	console.log("routePoint", routePoint);
 	network_nodes_Layer.eachLayer(function(layer) {
 		var junction_Lat_Lng = layer.getLatLng();
-
 		if(junction_Lat_Lng.equals(routePoint)) {
 //	console.log(routePoint, junction_Lat_Lng);
 			nextNodes.push(layer);
@@ -610,20 +610,20 @@ function searchRoutesAndNodesFromHere() {
 	var dist;
 //	console.log("currentNode", currentNode);
 	currentNode_Lat_Lng = currentNode.getLatLng();
-//	console.log("currentNode_Lat_Lng", currentNode_Lat_Lng);
+	console.log("currentNode_Lat_Lng", currentNode_Lat_Lng);
 
 	routesLayer.eachLayer(function(layer) {
 		var coordArray = layer.feature.geometry.coordinates;
 		firstPoint = L.GeoJSON.coordsToLatLng(coordArray[0] );
 		lastPoint = L.GeoJSON.coordsToLatLng(coordArray[coordArray.length - 1] );
 		if (currentNode_Lat_Lng.equals(firstPoint)) {
-//console.log("firstPoint", firstPoint, layer.feature.properties.name);
+console.log("firstPoint", firstPoint, layer.feature.properties.name,"lastPoint", lastPoint);
 			nextRoutes.push(layer);
 			nextRoutesIsForward.push(true);
 			selectNextPoint(lastPoint);
 		}
 		if (currentNode_Lat_Lng.equals(lastPoint)) {
-//console.log("lastPoint", lastPoint, layer.feature.properties.name);
+console.log("lastPoint", lastPoint, layer.feature.properties.name,"firstPoint", firstPoint);
 			nextRoutes.push(layer);
 			nextRoutesIsForward.push(false);
 			selectNextPoint(firstPoint);
