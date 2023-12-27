@@ -4,9 +4,9 @@ function init_tests() {
 	// region tests
 
 	var b_test = L.easyButton( '<span>tests</span>', function(){
-		alert('test');
+	//	alert('test');
 //	test_();
-	//	test_screen();
+		test_screen();
 	//	test_elev();
 	//	test_dist();
 	//  test_bounds();
