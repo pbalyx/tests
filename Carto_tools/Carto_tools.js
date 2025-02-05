@@ -1,7 +1,8 @@
 ///
 const version ="0.2.0";
-const subV = "_";
+const subV = "_a";
 // 0.1.1 : lecture gpx ou json
+
 window.onload = (event) => {
 	b_version.innerHTML = 'V: ' + version + subV; 
 	document.title = 'Carto_tools  V_' + version + subV;
@@ -300,16 +301,7 @@ map.on("click", function(e){
 		curPt_latlng = e.latlng;
 		curPtMark.setLatLng(curPt_latlng);
 		if (coordsMode) { updateCoords();} 
-		/*
-			var latLngStr = curPt_latlng.lng.toFixed(5)+ ', ' + curPt_latlng.lat.toFixed(5);
-			curPtLonLat.innerHTML = latLngStr;
-			getPointElev(latLngStr);
-		}
-		*/
 	}
-/*	if (marPtOn) {
-		//simple mark to check a point when changing basemap
-	}*/
 });
 
 map.on("zoomend", function(ev) {		
@@ -376,8 +368,8 @@ var curPtMark = new L.CircleMarker(curPt_latlng,
 	{
 		radius: 4,
 		fillColor: "red",
-		fillOpacity: 0.8,
-		color: "black",
+		fillOpacity: 0.6,
+		color: "blue",
 		weight: 1					
 	}
 ).addTo(map);
@@ -464,11 +456,6 @@ function show_hideOsm(vis){
 			osmMark.addTo(map);
 			curPtMark.removeFrom(map);
 			
-////
-/*			osmLayer.setStyle(osmStyle);
-			positionLayer.setStyle(hiddenStyle);
-			hidePopUp();//			popUpDiv.style.display = "none";
-*/			
 			close_tags();
 			objectsFound_array.length = 0;
 			fill_elements_table();
@@ -479,9 +466,6 @@ show_hideCoords(false);
 			b_aff_osm.innerHTML = "Explorer OSM";
 			osmMark.removeFrom(map);
 			curPtMark.addTo(map);
-////			osmLayer.setStyle(hiddenStyle);
-//			positionLayer.setStyle(positionStyle);
-//			popUpDiv.style.display = "block";
 		}
 		osmMode = vis;
 	}
@@ -552,7 +536,6 @@ function callOverpass() {
 	  searchRadius = Math.round(r)
 //		console.log('Z: '+map.getZoom()+ ',  R: '+searchRadius,osmMark._radius);
 	}
-////	
 		
 	function buildOverpassApiUrl() {
 		var query_1 = "?data=[out:json][timeout:15];	";
@@ -643,7 +626,6 @@ function set_events(event) {
 //	.setStyle("backgroundColor: red");
 }
 
-
 function show_tags(row, column,evt) {
 	currentObject = objectsFound_array[row];
 	//console.dir(currentObject);
@@ -657,13 +639,10 @@ function show_tags(row, column,evt) {
 	queryMetadata(currentObject);
 }
 
-
 function close_tags() {
 	tags_div.style.display = "none";
 	elements_div.style.display = "block";
 }
-
-
 
 function fill_elements_table() {
 	//clear table
