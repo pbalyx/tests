@@ -1,7 +1,8 @@
 ///
-const version ="0.2.0";
-const subV = "_a";
+const version ="0.2.1";
+const subV = "";
 // 0.1.1 : lecture gpx ou json
+// 0.2.1 : essai responsive design
 
 window.onload = (event) => {
 	b_version.innerHTML = 'V: ' + version + subV; 
@@ -75,7 +76,6 @@ var url_strava3 = 'https://heatmap-external-a.strava.com/tiles-auth/run/purple/{
 	
 // region layers
 
-
 function layer_onEachFeatureDo(feature, layer) {
 	var popupStr = '';
 	if (feature.properties) { 
@@ -111,7 +111,6 @@ var layerStyle1 = {
 	"fill":false
 };
 
-
 var layer1 = L.geoJSON(layer1Json, {
 		style: layerStyle1, 
 		onEachFeature: layer_onEachFeatureDo,
@@ -126,7 +125,7 @@ var layer1 = L.geoJSON(layer1Json, {
 		}
 	});
 
-var layer1Json = {};
+var layer1Json = {"features":[]};
 
 var layer2Style = {
 	"color": "darkBlue",
@@ -150,7 +149,7 @@ var layer2 = L.geoJSON(layer2Json, {
 		}
 	});
 
-var layer2Json = {};
+var layer2Json = {"features":[]};
 
 var layer3Style = {
 	"color": "Maroon",
@@ -174,7 +173,49 @@ var layer3 = L.geoJSON(layer3Json, {
 		}
 	});
 
-var layer3Json = {};
+var layer3Json = {"features":[]};
+
+
+function updateLayer(_layerNum, _layerJson) {
+	if (_layerJson != null) {
+		switch (_layerNum) {
+			case 1 : 
+				layer1Json = _layerJson;
+				layer1.addData(layer1Json);
+			///	infoTxt.innerHTML = _file.name; 
+				map.removeLayer(layer1)
+				map.addLayer(layer1)
+				layerControl.removeLayer(layer1);
+				layerControl.addOverlay(layer1, "Calque_1");
+				overlaysVis.push(2);
+			break;
+			case 2 : 
+				layer2Json = _layerJson;
+				layer2.addData(layer2Json);
+			///	infoTxt.innerHTML = _file.name; 
+				map.removeLayer(layer2)
+				map.addLayer(layer2)
+				layerControl.removeLayer(layer2);
+				layerControl.addOverlay(layer2, "Calque_2");
+				overlaysVis.push(3);
+			break;
+			case 3 : 
+				layer3Json = _layerJson;
+				layer3.addData(layer3Json);
+			///	infoTxt.innerHTML = _file.name; 
+				map.removeLayer(layer3)
+				map.addLayer(layer3)
+				layerControl.removeLayer(layer3);
+				layerControl.addOverlay(layer3, "Calque_3");
+				overlaysVis.push(4);
+			break;
+			default : 
+			alert('erreur ',  _layerNum);
+		
+		}
+	}
+}
+
 // endregion
 
 // region map
@@ -896,6 +937,7 @@ b_close_file.onclick = () => {
 			layer1.clearLayers();
 			layerControl.removeLayer(layer1);
 			overlaysVis_remove(2);
+///		console.log(layer1Json); //layer1Json pas vidé
 			break;
 		case 2: 
 			layer2.clearLayers();
@@ -915,25 +957,12 @@ b_close_file.onclick = () => {
 
 // region file
 
-var file_num = 0;
-
-////var sub_file_1 = document.getElementById("sub_file_1");
-
-
-////var input_file_1 = document.getElementById("input_file_1");
-////var input_file_2 = document.getElementById("input_file_2");
-////input_file_1.onclick = () => { file_num = 1 }
-////input_file_2.onclick = () => { file_num = 2 }
-
-
 document.getElementById('file_select').addEventListener('change', handleFileSelect, false);
 function handleFileSelect(evt) {
 	const fileList = evt.target.files; // FileList object
 	currentFile = fileList[0];
 	read_File(currentFile);
 }
-
-//var input_Text;
 
 function toJsonTxt(gpxText) {
 
@@ -1037,70 +1066,10 @@ function read_File(_file) {
 	reader.onload = function (evt) {	//onload : lecture terminée ok
 		input_Text = evt.target.result;
 		var layerJson = toJsonObj(input_Text);
-		if (layerJson != null) {
-//			switch (file_num) {
-			switch (layerNum) {
-				case 1 : 
-					layer1Json = layerJson;
-					layer1.addData(layer1Json);
-				///	infoTxt.innerHTML = _file.name; 
-					map.removeLayer(layer1)
-					map.addLayer(layer1)
-					layerControl.removeLayer(layer1);
-					layerControl.addOverlay(layer1, "Calque_1");
-					overlaysVis.push(2);
-				break;
-				case 2 : 
-					layer2Json = layerJson;
-					layer2.addData(layer2Json);
-				///	infoTxt.innerHTML = _file.name; 
-					map.removeLayer(layer2)
-					map.addLayer(layer2)
-					layerControl.removeLayer(layer2);
-					layerControl.addOverlay(layer2, "Calque_2");
-					overlaysVis.push(3);
-				break;
-				case 3 : 
-					layer3Json = layerJson;
-					layer3.addData(layer3Json);
-				///	infoTxt.innerHTML = _file.name; 
-					map.removeLayer(layer3)
-					map.addLayer(layer3)
-					layerControl.removeLayer(layer3);
-					layerControl.addOverlay(layer3, "Calque_3");
-					overlaysVis.push(4);
-				break;
-				default : 
-				alert('erreur ',  layerNum);
-			
-			}
-		}
+		updateLayer(layerNum, layerJson);
 	}
 }
 
-//var trkpts = [];
-
-/* ////
-b_center_file_1.onclick = () => {
-	map.fitBounds(layer1.getBounds());	
-}
-
-b_close_file_1.onclick = () => {
-	layer1.clearLayers();
-	layerControl.removeLayer(layer1);
-	overlaysVis_remove(2);
-}
-
-b_center_file_2.onclick = () => {
-	map.fitBounds(layer2.getBounds());	
-}
-
-b_close_file_2.onclick = () => {
-	layer2.clearLayers();
-	layerControl.removeLayer(layer2);
-	overlaysVis_remove(3);
-}
-*/
 
 // endregion
 
@@ -1110,7 +1079,8 @@ function test() {
 //alert('no test');
 //	navigator.clipboard.writeText(input_Text)
 //layer1.setStyle(layer2Style);
-layer1.setStyle({color:"black"});
+//layer1.setStyle({color:"black"});
+console.log(overlaysVis);
 
 
 }
