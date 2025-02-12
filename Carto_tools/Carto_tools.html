@@ -137,7 +137,7 @@
 	#infoDiv {
 		position: absolute; 
 		width: 20%;
-		left: 15%;
+		left: 35%;
 		top: 16px;
 		background-color: lavender;
 		border: 1px solid blue;
@@ -150,7 +150,7 @@
 	#curPtDiv {
 		position: absolute; 
 		width: 15%;
-		left: 20%;
+		left: 35%;
 		top: 16px;
 		background-color: lavender;
 		border: 1px solid blue;
@@ -165,7 +165,7 @@
 	#osmDiv {
 		position: absolute; 
 		width: 566px;
-		left: 600px;
+		left: 300px;
 		top: 35px;
 		background-color: lavender;
 		border: 1px solid blue;
@@ -180,6 +180,30 @@
 		overflow: auto;
 		display: none;
 	}
+	
+	#importDiv {
+		position: absolute; 
+		width: 300px;
+		left: 300px;
+		top: 35px;
+		background-color: lavender;
+		border: 1px solid blue;
+		resize: both;
+		overflow:hidden;
+		padding-bottom: 8px;
+    }
+	
+	#importDivIn {
+		max-height: 300px;	
+		padding: 8px;
+		overflow: auto;
+	}
+/*	#import_div {
+		max-height: 300px;	
+		padding: 8px;
+		overflow: auto;
+		display: none;
+	}*/
 	
 	#tags_div {
 		max-height: 300px;	
@@ -222,52 +246,34 @@
 <body>
 	<div id="main">
 		<div id="menubar" >
-			<div id= "d_layer" class= "d_menu" >
+		
+			<div id= "d_layer" class= "d_menu"   >
 				<button id="b_layer" class= "b_menu" >Calque 1</button>
-				<div id= "sub_layer" class= "d_sub"  style="display:none"    >
+				<div id= "sub_layer" class= "d_sub"    >
 					<button id="b_layer_1" class= "b_submenu" >Calque 1 -x-</button>
 					<button id="b_layer_2" class= "b_submenu" >Calque 2</button>
 					<button id="b_layer_3" class= "b_submenu" >Calque 3</button>
 				</div>			
-				<div id="sub_file" class= "d_sub">
-					<input type="file" id="file_select" class = "input_file" />	
-					<label id= "input_file"  for="file_select">
+			</div>
+			
+			<div id= "d_Action" class= "d_menu" >
+				<button id="b_Action" class= "b_menu" >Action</button>
+				<div id="sub_fileX" class= "d_sub">
+					<input type="file" id="file_selectX" class = "input_file" />	
+					<label id= "input_fileX"  for="file_selectX">
 							Ajouter un fichier</label>
+					<button id="b_osmImport" class= "b_submenu" >Importer OSM</button>
 					<button id="b_center_file" class= "b_submenu" >Centrer</button>
 					<button id="b_close_file" class= "b_submenu" >Vider</button>
 					<button id="b_save_file" class= "b_submenu" style="display:none"  >Enregistrer</button>
 				</div>
 			</div>
-<!--			<div id= "d_file1" class= "d_menu" >	
-				<button id="b_file_1" class= "b_menu" >Calque 1</button>
-				<div id="sub_file_1" class= "d_sub">
-					<input type="file" id="file_select" class = "input_file" />	
-					<label id= "input_file_1"  for="file_select">
-							Ajouter un fichier</label>
-					<button id="b_center_file_1" class= "b_submenu" >Centrer</button>
-					<button id="b_close_file_1" class= "b_submenu" >Vider</button>
-					<button id="b_save_file_1" class= "b_submenu" style="display:none"  >Enregistrer</button>
-				</div>
-			</div>
 			
-				
-			<div id= "d_file2" class= "d_menu" >	
-				<button id="b_file_2" class= "b_menu" >Calque 2</button>
-				<div id="sub_file_2" class= "d_sub">
-					<input type="file" id="file_select" class = "input_file" />	
-					<label id= "input_file_2"  for="file_select">
-							Ajouter un fichier</label>
-					<button id="b_center_file_2" class= "b_submenu" >Centrer</button>
-					<button id="b_close_file_2" class= "b_submenu" >Vider</button>
-					<button id="b_save_file_2" class= "b_submenu" style="display:none"  >Enregistrer</button>
-				</div>
-			</div>
--->					
 			<div id= "d_tools" class= "d_menu">
 				<button id="b_tools" class= "b_menu">Outils</button>
 					<div id="dSub_tools" class= "d_sub" >
 						<button id="b_coords" class= "b_submenu" >Coordonnées</button>
-						<button id="b_aff_osm" class= "b_submenu" >Explorer OSM&nbsp;&nbsp;</button>
+						<button id="b_osmExplore" class= "b_submenu" >Explorer OSM&nbsp;&nbsp;</button>
 						<button id="b_test" class= "b_submenu" >Test</button>
 					</div>
 			</div>		
@@ -275,7 +281,7 @@
 			<div id= "d_aff" class= "d_menu">
 				<button id="b_aff" class= "b_menu">Affiche</button>
 					<div id="dSub_aff" class= "d_sub" >
-						<button id="b_info" class= "b_submenu" >Info -x-</button>
+						<button id="b_info" class= "b_submenu" >Info</button>
 						<button id="b_version" class= "b_submenu" >0.0</button>
 					</div>
 			</div>		
@@ -296,7 +302,7 @@
 	<div id= "curPtDiv" style ="display: none" >
 		<div id= "curPtHeader" class= "header" >
 			<span>Point</span>
-			<button id="b_copyCoords" style= "display: none">Copier coords</button>
+			<button id="b_copyCoords" >Copier coords</button>
 			<button id="bCloseCurPt" class = "b_close">X</button>
 		</div>	
 		<span id= "curPtLonLat" class= "curPtSpan" ></span><br>
@@ -305,7 +311,7 @@
 
 	<div id="osmDiv" style ="display: none" >		
 		<div id= "osmHeader" class= "header">
-			OpenStreetMap 
+			<span id= "headerTitlle">OpenStreetMap</span> 
 			<button id="b_request" class= "b_header">Rechercher</button>
 			<span id="osmStatus" style= "padding: 2px"></span>
 			<button id="bCloseOsm" class = "b_close">X</button>
@@ -328,14 +334,35 @@
 				</tr> 
 			</table>
 		</div>
+	</div>
+	<div id= "importDiv" style= "display: none">
+		<div id= "importHeader" class= "header">
+			<span>Importer OSM </span> 
+			<button id="b_import" class= "b_header">Importer</button>
+			<span id="importStatus" style= "padding: 2px"></span>
+			<button id="bCloseImport" class = "b_close">X</button>
+		</div>
+		<div id= "importDivIn">
+			<div id="query"></div>
+			<div class="header">Elements</div>
+			<input type="radio" name="subType" value="route" id="route" checked>
+			<span for="route">Routes</span><br>
+			<input type="radio" name="subType" value="guidepost" id="guidepost">
+			<span for="guidepost">Poteaux</span><br>
+			<input type="radio" name="subType" value="network_map" id="network_map">
+			<span for="network_map">Info rando</span><br>
+			<input type="radio" name="subType" value="network_node" id="network_node">
+			<span for="network_node">Carrefours</span><br>
+			<input type="radio" name="subType" value="other" id="other">
+			<span for="xs">Autre</span>
+		</div>
+
 
 	</div>
 
-	
 
 	
-<!--	<script src="guideposts.js"> </script>
- 	<script src="routes.js"> </script> -->
+	<script src='osmtogeojson.js'></script> 
 	<script src="Carto_tools.js"> </script>
 
 </body>
