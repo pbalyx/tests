@@ -1,16 +1,20 @@
 ///
-const version ="0.3.2";
+const version ="0.4.1";
 const subV = "";
 // 0.1.1 : lecture gpx ou json
 // 0.2.1 : essai responsive design
 // 0.3.0 : objets calques 
 // 0.3.1 : objets calques debuggé
 // 0.3.2 : OSM import
+// 0.3.3 : Waymarked Trails
+// 0.4.0 : gestion calques ok
+// 0.4.1 : tableau de features
 window.onload = (event) => {
 	b_version.innerHTML = 'V: ' + version + subV; 
 	document.title = 'Carto_tools  V_' + version + subV;
 	console.log("version : ", version);
 	init_map();
+	init_features_table();
 };
 
 function init_map() {
@@ -28,7 +32,8 @@ function init_map() {
 	}); 
 
 //region OSM/ 	
-var OSMLayer = L.tileLayer('https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png', {
+///var OSMLayer = L.tileLayer('https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png', {
+var OSMLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 		maxZoom: 19,
 		attribution: '&copy <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>'
 	});	
@@ -75,9 +80,17 @@ var url_strava3 = 'https://heatmap-external-a.strava.com/tiles-auth/run/purple/{
 		attribution: '| <a href="https://geoservices.ign.fr/" target="_blank">IGN BD Topo</a>'
 	});
 
+// region Waymarkedtrail
+//https://tile.waymarkedtrails.org/hiking/14/8388/5930.png en direct marche
+	var WMTLayer = L.tileLayer('https://tile.waymarkedtrails.org/hiking/{z}/{x}/{y}.png', {
+		maxNativeZoom:17,
+		maxZoom: 19,
+		attribution: '| <a href="https://www.waymarkedtrails.org/" target="_blank">Waymarked Trails</a>'
+	});
+
 // endregion
 	
-// region layers
+// region Calques
 
 function layer_onEachFeatureDo(feature, layer) {
 	var popupStr = '';
@@ -109,32 +122,64 @@ function layer_onEachFeatureDo(feature, layer) {
 }
 
 var defaultStyle = {
-	color: "red",
+	color: "green",
 	fillColor: "blue",
 	"weight": 2,
 	"opacity": 1,
-	"fillOpacity": 0.5,
+	"fillOpacity": 0.8,
 	"stoke": true,
 	"fill":false
 };
 
-const style1 = {color: "red",	"fillColor": "Blue"};
-const style2 = {"color": "darkBlue",	"fillColor": "red"};
+const style1 = {"color": "red",	"fillColor": "Yellow"};
+const style2 = {"color": "Blue",	"fillColor": "LightBlue"};
 const style3 = {"color": "Maroon",	"fillColor": "green"};
 const styles = [style1, style2, style3];
 
-
-var layerX = new LayerObj();////
-
-function isPresent(_key, _value, _featuresList) {
+function isPresentBad(_feature, _featuresList) {
 	var _isPresent = false;
-	for (var j = 0; j < _featuresList.length; j++) {
-///console.log('test ', _value, _featuresList[j][_key]);
-		if (_value == _featuresList[j][_key]) {
-			_isPresent = true;
-			break;
+		for (var j = 0; j < _featuresList.length; j++) {
+			if (Object.is(_feature, _featuresList[j])) {
+				_isPresent = true;
+				break;
+			}
+		}	
+	return _isPresent;
+}
+
+
+function isPresent(_feature, _featuresList) {
+	var _isPresent = false;
+	var _featureId = _feature["id"];
+	if (_featureId) {
+		for (var j = 0; j < _featuresList.length; j++) {
+			if (_featureId == _featuresList[j]["id"]) {
+				_isPresent = true;
+				break;
+			}
+		}
+	} else if (_feature.properties) {
+		var _propertyId = _feature.properties["@id"];
+		if (_propertyId) {
+			for (var j = 0; j < _featuresList.length; j++) {
+				if (_featuresList[j].properties 
+					&& _propertyId == _featuresList[j].properties["@id"]) {
+					_isPresent = true;
+					break;
+				}
+			}
+		} else if (_feature.properties.name){
+			for (var j = 0; j < _featuresList.length; j++) {
+				if (_featuresList[j].properties 
+					&& _feature.properties.name == _featuresList[j].properties.name) {
+					_isPresent = true;
+					break;
+				}
+			}
+
 		}
 	}
+	
 	return _isPresent;
 }
 
@@ -146,9 +191,8 @@ function fillCircleMarkers(_layer) {
 	});
 }
 		
-
 //objet layer
-function LayerObj (_name) {
+function CalqueObj (_name) {
 	this.name = _name;
 	this.layer = L.geoJSON(this.layerJson, {
 		style: defaultStyle,
@@ -163,49 +207,73 @@ function LayerObj (_name) {
 	
 	this.layerJson = {"features":[]};
 	this.setStyle = function(_style) { 
-/// console.log(this.layer.options.style);		
 		this.layer.setStyle(_style);
-/// console.dir(this.layer);		
 	}
-	
-	this.updateLayerX = function(_addedJson, _isNew) {
-///			console.log("avant ",this.layerJson.features.length);
-///			console.log("ajout ",_addedJson.features.length);
-		var _identKey = "id";
+	this.updateLayer = function () {
+		this.layer.clearLayers();
+		this.layer.addData(this.layerJson.features);
+		fillCircleMarkers(this.layer); // needed to overwrite fill=false for markers
+	}
+	this.addedFeaturesList = [];
+	this.addFeatures = function(_addedJson) {
+		this.addedFeaturesList = [];
 		for (var i = 0; i < _addedJson.features.length; i++) {
-			var _id = _addedJson.features[i][_identKey];	
-			if (!isPresent(_identKey, _id, this.layerJson.features)) {
+			if (!isPresent(_addedJson.features[i], this.layerJson.features)) {
+				this.addedFeaturesList.push(_addedJson.features[i]);
 				this.layerJson.features.push(_addedJson.features[i]);
 			}
 		}
-///		console.log("après ",this.layerJson.features.length);
-		this.layer.clearLayers();
-		this.layer.addData(this.layerJson.features);
-		fillCircleMarkers(this.layer);
-			
-		//		map.removeLayer(this.layer)
-		map.addLayer(this.layer)	
+		this.updateLayer();	
+		fill_features_table();
+	}
+	
+	this.undoLast = function() {
+		var _tmpFeaturesList = [];
+//		console.log("avant ",this.layerJson.features);
+		for (var i = 0; i < this.layerJson.features.length; i++) {
+			if (!isPresent(this.layerJson.features[i], this.addedFeaturesList)) {
+				_tmpFeaturesList.push(this.layerJson.features[i]);
+			}
+		}
+		this.layerJson.features = _tmpFeaturesList;
+		this.addedFeaturesList =[];	
+//		console.log("après ",this.layerJson.features);
+		this.updateLayer();	
+		fill_features_table();
 	}
 	this.clearLayer = function () {
 		this.layer.clearLayers();
 		this.layerJson = {"features":[]}; 
+		fill_features_table();
 	}
 }
 
-var calque1 = new LayerObj("Calque1");
-	calque1.setStyle(style1);////don't work here, ok in test ???
-var calque2 = new LayerObj("Calque2");
-	calque2.setStyle(style2);
-var calque3 = new LayerObj("Calque3");
-	calque3.setStyle(style3);
+function updateCalque(_addedJson) {
+	var calque = calques[calqueIndex];
+	var isNew = (calque.layerJson.features.length == 0);
+//console.log(isNew, calque.layerJson.features.length);
+	calque.addFeatures(_addedJson);
+	if (isNew) {
+		map.addLayer(calque.layer);
+	}
+	calque.setStyle(styles[calqueIndex]); //must be done each time (?)
+	overlaysVis_remove(calque.name);
+	overlaysVis.push(calque.name);
+		show_overlayVis();
+}
+
+
+var calque1 = new CalqueObj("Calque1");
+var calque2 = new CalqueObj("Calque2");
+var calque3 = new CalqueObj("Calque3");
 const calques = [calque1, calque2, calque3];
 
 // endregion
 
 // region map
 
-var mapCenter = [44.65, 4.251];//Jaujac
-//var mapCenter = [44.622, 4.40];
+//var mapCenter = [44.65, 4.251];//Jaujac
+var mapCenter = [44.622, 4.40];// 4.40582, 44.63658
 
 var map = L.map('map', {
 //	center: mapCenter,
@@ -227,101 +295,72 @@ var baseMaps = {
 var overlayMaps = {
 	"BD_Topo": BD_TopoLayer,
 	"Stava": StavaLayer,
+	"Waymarked_Trails": WMTLayer
 };
+overlayMaps[calque1.name] = calque1.layer;
+overlayMaps[calque2.name] = calque2.layer;
+overlayMaps[calque3.name] = calque3.layer;
 
 var layerControl = L.control.layers(baseMaps, overlayMaps).addTo(map);
 
 // flags for visibility dependant of layerControl
 // (don't add layers on moveend if their layerControl checkBox is not checked)
-// add lyers in correct order for superposition
+// add layers in correct order for superposition
 var overlaysVis = [];
-var map_moving = false;
 
-var bd_topo_visible = false;
-var strava_visible = false;
+var map_moving = false;
 
 map.on("movestart", function () {
 	map_moving = true;
 	for (var i = 0; i < calques.length; i++) {
-	//console.log(i, calques[i].layer);
 		map.removeLayer(calques[i].layer);
 	}
 	map.removeLayer(StavaLayer);
 	map.removeLayer(BD_TopoLayer);
+	map.removeLayer(WMTLayer);
 }); 
 
 map.on("moveend", function () {
 	for (var i = 0; i < overlaysVis.length; i++) {
-		switch(overlaysVis[i]) {
-			case 0: 
-				map.addLayer(BD_TopoLayer);
-				break;
-			case 1: 
-				map.addLayer(StavaLayer);
-				break;
-			case 2:
-			case 3:
-			case 4: 
-//				console.log(overlaysVis);
-//				console.log('i', overlaysVis[i]-2, calques[overlaysVis[i]-1]);
-				map.addLayer(calques[overlaysVis[i]-2].layer);
-				break;
-//			default:map.addLayer(calque1);
+		var layerName = overlaysVis[i];
+		if (overlayMaps[layerName]) {
+			map.addLayer(overlayMaps[overlaysVis[i]]);
+		} 
+/*		
+//// todo : manage calque name change
+		else {
+			for (var j=0; j < calques.length; j++) {
+				if (calques[j].name == layerName) {
+					map.addLayer(calques[i].layer);
+				}
+			}
 		}
+*/
 	}
+	show_overlayVis();
 	map_moving = false;
 });
 
-function overlaysVis_remove(num) {
-	overlaysVis = overlaysVis.toSpliced(overlaysVis.indexOf(num),1)
+function overlaysVis_remove(name) {
+	overlaysVis = overlaysVis.toSpliced(overlaysVis.indexOf(name),1)
 }
 
 map.on("overlayremove", e => {
 	if (!map_moving) {
-		switch (e.name) {
-			case "BD_Topo": 
-				bd_topo_visible = false;
-				overlaysVis_remove(0);
-			break;
-			case "Stava":
-				strava_visible = false;
-				overlaysVis_remove(1);
-			break;
-			default:
-		}
-		for (var i = 0; i < calques.length; i++) {
-			if (calques[i].name == e.name) {
-				overlaysVis_remove(i+2);
-			}
-		}
+		overlaysVis_remove(e.name);
 	}
 });
 
 map.on("overlayadd", e => {
 	if (!map_moving) {
-		switch (e.name) {
-			case "BD_Topo":
-				bd_topo_visible = true;
-				overlaysVis.push(0);
-			break;
-			case "Stava":
-				strava_visible = true;
-				overlaysVis.push(1);
-			break;
-		}
-		for (var i = 0; i < calques.length; i++) {
-			if (calques[i].name == e.name) {
-				overlaysVis.push(i+2);
-			}
-		}
-
+		overlaysVis.push(e.name);
 	}
 });
 
 map.on("click", function(e){
 	if (osmMode == "explore") {
 		osm_latlng = e.latlng;
-		var latLngStr = osm_latlng.lng.toFixed(5)+ ', ' + osm_latlng.lat.toFixed(5);
+////		var latLngStr = osm_latlng.lng.toFixed(5)+ ', ' + osm_latlng.lat.toFixed(5);
 		osmMark.setLatLng(osm_latlng);
 	} else {
 		curPt_latlng = e.latlng;
@@ -334,6 +373,42 @@ map.on("zoomend", function(ev) {
 	setOsmSearchRadius();
 	zoom_div.innerHTML = 'zoom: ' + map.getZoom();
 });
+
+function dragElement(header, elem) {
+		header.onmousedown = dragMouseDown;
+	  var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0, posTop = 0;
+	 function dragMouseDown(e) {
+		e = e || window.event;
+		e.preventDefault();
+
+		// get the mouse cursor position at startup:
+		pos3 = e.clientX;
+		pos4 = e.clientY;
+		document.onmouseup = closeDragElement;
+		// call a function whenever the cursor moves:
+		document.onmousemove = elementDrag;
+	  }
+	 function elementDrag(e) {
+		e = e || window.event;
+		e.preventDefault();
+		// calculate the new cursor position:
+		pos1 = pos3 - e.clientX;
+		pos2 = pos4 - e.clientY;
+		pos3 = e.clientX;
+		pos4 = e.clientY;
+		// set the elem's new position:
+		posTop = elem.offsetTop - pos2;
+		if (posTop < 0) { posTop = 0}  // prevent header to go beyond top
+		elem.style.top = (posTop) + "px";
+		elem.style.left = (elem.offsetLeft - pos1) + "px";
+	  }
+	 function closeDragElement() {
+		// stop moving when mouse button is released:
+		document.onmouseup = null;
+		document.onmousemove = null;
+	  }
+
+}
 	
 function moveableMarker(map, marker) {
 
@@ -358,41 +433,58 @@ function moveableMarker(map, marker) {
 
 // region menu
 
-var layerNum = 1;
+var calqueIndex = 0;
 var sub_layer = document.getElementById("sub_layer");
 b_layer_1.onclick = setLayer;
 b_layer_2.onclick = setLayer;
 b_layer_3.onclick = setLayer;
+b_layer_1b.onclick = setLayer;
+b_layer_2b.onclick = setLayer;
+b_layer_3b.onclick = setLayer;
 
 function setLayer(ev) {
 	var b_id = ev.target.id;
+	console.log(b_id);
 	switch (b_id) {
-		case "b_layer_1": layerNum = 1;
-		break;
-		case "b_layer_2": layerNum = 2;
-		break;
-		case "b_layer_3": layerNum = 3;
-		break;	
+		case "b_layer_1": 
+		case "b_layer_1b": 
+			calqueIndex = 0;
+			break;
+		case "b_layer_2": 
+		case "b_layer_2b": 
+			calqueIndex = 1;
+			break;
+		case "b_layer_3": 
+		case "b_layer_3b": 
+			calqueIndex = 2;
+			break;
 	}
 	updateLayerMenu();
+	fill_features_table();
 }
 
 function updateLayerMenu() {
 	b_layer_1.innerHTML = calque1.name;
 	b_layer_2.innerHTML = calque2.name;
 	b_layer_3.innerHTML = calque3.name;
-	switch (layerNum) {
-		case 1: 
+	b_layer_1b.style.backgroundColor = "MediumSpringGreen";
+	b_layer_2b.style.backgroundColor = "MediumSpringGreen";
+	b_layer_3b.style.backgroundColor = "MediumSpringGreen";
+	switch (calqueIndex) {
+		case 0: 
 			b_layer_1.innerHTML += ' -x-';
 			b_layer.innerHTML = calque1.name;
+			b_layer_1b.style.backgroundColor = "Orange";
 			break;
-		case 2: 
+		case 1: 
 			b_layer_2.innerHTML += ' -x-';
 			b_layer.innerHTML = calque2.name;
+			b_layer_2b.style.backgroundColor = "Orange";
 			break;
-		case 3: 
+		case 2: 
 			b_layer_3.innerHTML += ' -x-';
 			b_layer.innerHTML = calque3.name;
+			b_layer_3b.style.backgroundColor = "Orange";
 			break;
 	}
 }
@@ -405,17 +497,24 @@ b_osmImport.onclick =  ()=>{
 	show_hideOsm();
 }
 
+b_undo.onclick = () => {	
+	calques[calqueIndex].undoLast();
+	calques[calqueIndex].setStyle(styles[calqueIndex]);
+}
+
 b_center_file.onclick = () => {
-	var bounds = calques[layerNum - 1].layer.getBounds();
+	var bounds = calques[calqueIndex].layer.getBounds();
 	if (bounds.isValid()) {
 		map.fitBounds(bounds);
 	}
 }
 
 b_close_file.onclick = () => {	
-	layerControl.removeLayer(calques[layerNum - 1].layer);
-	calques[layerNum - 1].clearLayer();
-	overlaysVis_remove(layerNum + 1);
+//console.log(calques[calqueIndex].layer);
+	calques[calqueIndex].clearLayer();
+	map.removeLayer(calques[calqueIndex].layer);
+	overlaysVis_remove(calques[calqueIndex].name);
+//console.log(calques[calqueIndex].layer);
 }
 
 //------------ tools --------------
@@ -506,7 +605,7 @@ var	ptStrs ;
 	latPrm = 'lat=' + ptStrs[1].trim();
 	URLFull = URLbase + lonPrm + '&' +latPrm + '&zonly=true';  
 ///	URLFull = URLbase + lonPrm + '&' +latPrm ;  
-//		console.log(URLFull);
+	curPtElev.style.backgroundColor = "Red";
 	var httpRequest = new XMLHttpRequest();
 	httpRequest.open('GET', URLFull);
 	httpRequest.onload = function() {
@@ -514,6 +613,7 @@ var	ptStrs ;
 // 		console.log(responseStr);
 		elevStr = responseStr.substring(responseStr.indexOf("[")+1, responseStr.indexOf("]"));
 		curPtElev.innerHTML = 'ele: ' + elevStr + ' m' ;
+		curPtElev.style.backgroundColor = "Lavender";
 	}
 	httpRequest.send();
 }
@@ -522,12 +622,49 @@ var	ptStrs ;
 	
 // endregion
 
-// region info_div
-var infoDiv = document.getElementById('infoDiv');
-var infoHeader = document.getElementById('infoHeader');
-var infoTxt = document.getElementById('infoTxt');
+// region statusDiv
+var statusDiv = document.getElementById('statusDiv');
+var statusHeader = document.getElementById('statusHeader');
+var statusTxt = document.getElementById('statusTxt');
+var statusVisible = false;
 
-	var infoVisible = false;
+	b_status.onclick = () => {
+		statusVisible = !statusVisible;
+		show_hideStatus(statusVisible);
+	}
+	
+	bCloseStatus.onclick = (ev) => {
+		show_hideStatus(false);
+	}
+	
+	function show_hideStatus(vis){
+		if(vis) {
+			statusDiv.style.display = "block";
+			b_status.innerHTML = "Status -x-";
+		}
+		else {
+			statusDiv.style.display = "none";
+			b_status.innerHTML = "Status";
+		}
+		statusVisible = vis;
+	}
+
+statusHeader.onmouseover = dragstatusDiv;
+function dragstatusDiv(){
+	dragElement(statusHeader, statusDiv );
+}
+
+//endregion
+
+// region infoDiv
+var infoDiv = document.getElementById("infoDiv");
+var infoHeader = document.getElementById("infoHeader");
+var featuresCount = document.getElementById("featuresCount");
+var features_div = document.getElementById("features_div"); 
+var features_table = document.getElementById("features_table");
+var features_table_head = document.getElementById("features_table_head"); 
+
+var infoVisible = false;
 
 	b_info.onclick = () => {
 		infoVisible = !infoVisible;
@@ -555,42 +692,56 @@ function draginfoDiv(){
 	dragElement(infoHeader, infoDiv );
 }
 
-function dragElement(header, elem) {
-		header.onmousedown = dragMouseDown;
-	  var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0, posTop = 0;
-	 function dragMouseDown(e) {
-		e = e || window.event;
-		e.preventDefault();
-
-		// get the mouse cursor position at startup:
-		pos3 = e.clientX;
-		pos4 = e.clientY;
-		document.onmouseup = closeDragElement;
-		// call a function whenever the cursor moves:
-		document.onmousemove = elementDrag;
-	  }
-	 function elementDrag(e) {
-		e = e || window.event;
-		e.preventDefault();
-		// calculate the new cursor position:
-		pos1 = pos3 - e.clientX;
-		pos2 = pos4 - e.clientY;
-		pos3 = e.clientX;
-		pos4 = e.clientY;
-		// set the elem's new position:
-		posTop = elem.offsetTop - pos2;
-		if (posTop < 0) { posTop = 0}  // prevent header to go beyond top
-		elem.style.top = (posTop) + "px";
-		elem.style.left = (elem.offsetLeft - pos1) + "px";
-	  }
-	 function closeDragElement() {
-		// stop moving when mouse button is released:
-		document.onmouseup = null;
-		document.onmousemove = null;
-	  }
-
+function init_features_table() {
+/*	for (var i = features_table.rows.length -1; i > 0; i--) {
+		features_table.deleteRow(-1);
+	}*/
+	features_table_head.innerHTML = 
+	`
+		<th style="width:55px">type</th>
+		<th style="width:150px">id</th>
+		<th style="width:400px">Nom</th>	
+	`;
 }
 
+function fill_features_table() {
+	//clear table
+	var rows = features_table.getElementsByTagName('tr');
+	for (var i = features_table.rows.length -1; i > 0; i--) {
+		features_table.deleteRow(-1);
+	}
+	var nbFeatures = calques[calqueIndex].layerJson.features.length;
+	featuresCount.innerHTML = nbFeatures + " éléments: ";
+//	console.log(calques[calqueIndex].layerJson.features);
+	calques[calqueIndex].layerJson.features.forEach(function (item) {
+		var row = features_table.insertRow();
+		var _id = osmId(item);
+		if (_id == "") {
+			addCell(row, "xx");		
+			addCell(row, "yy");		
+		} else if (_id.indexOf('/') > 0) {
+			addCell(row, _id.substring(0, _id.indexOf('/')));
+			addCell(row, _id.substring( _id.indexOf('/')+1, _id.length));
+		} else {
+			addCell(row, "--");
+			addCell(row, _id); 
+		}
+;	
+		if (item.properties && item.properties.name ) { 
+			addCell(row, item.properties.name); 
+		} else { addCell(row, "zz");};		
+	});
+}
+
+function osmId(_feature) {
+	var strOut = "";
+	if (_feature.id) {
+		strOut = _feature.id 
+	} else if (_feature.properties && _feature.properties["@id"]) {
+		strOut = _feature.properties["@id"];
+	}
+	return strOut;
+}
 
 //endregion
 
@@ -599,7 +750,6 @@ function dragElement(header, elem) {
 var osmMode = "none"; // "none", "import", "explore"
 
 function show_hideOsm(){
-///console.log(osmMode);
 		if(osmMode == "none") {
 			osmDiv.style.display = "none";
 			importDiv.style.display = "none";
@@ -614,7 +764,9 @@ function show_hideOsm(){
 			elements_div.style.display = "block";
 			b_osmExplore.innerHTML = "Explorer OSM -x-";
 ////			b_request.innerHTML = "Explorer";
+			osm_latlng = curPt_latlng;
 			osmMark.addTo(map);
+			osmMark.setLatLng(osm_latlng);
 			curPtMark.removeFrom(map);
 			close_tags();
 			objectsFound_array.length = 0;
@@ -653,7 +805,6 @@ function centralQuery_around(_params) {
 		var txt = "(nwr(around:";  //tout
 		txt += _params._searchRadius;
 		txt += ", ";
-///		console.log(_params._osm_latlng);
 		txt+= latlngStr(_params._osm_latlng);
 		txt += ");)";
 		return txt;
@@ -665,7 +816,6 @@ function centralQueryMeta(_params) {
 		var metaUrl = ""; 
 		metaUrl += "(" + _type;
 		metaUrl += "(id:" + _id + ");); out meta;";
-//  console.log("metaUrl : " + metaUrl);
 		return metaUrl;
 }
 	
@@ -690,7 +840,6 @@ function centralQueryImport(_params) {
 		}
 		txt += bounds_strNew(_params._boundsObj);
 		txt += ";)";
-//		console.log("centralQueryImport: ", txt);
 		return txt;
 }
 
@@ -702,7 +851,6 @@ function bounds_strNew(_bounds) {
 		+ _bounds._southWest.lng.toFixed(6) +', '
 		+ _bounds._northEast.lat.toFixed(6) + ', '
 		+ _bounds._northEast.lng.toFixed(6) + ')';
-//console.log(boundsStr);
 	return boundsStr;
 }
 	
@@ -721,7 +869,6 @@ function buildQuery(_type,  _params) {
 			queryStr += ";out geom;";
 		break;
 	}
-///    console.log("queryStr : " + queryStr);
 	
 	return queryStr;
 }
@@ -733,23 +880,23 @@ function callOverpass(type, params) {
 		case "around":
 			_status = osmStatus;
 			break;
-		case "import":
-			_status = importStatus;
-			break;
 		case "meta":
+			_status = osmStatus;
+			break;
+		case "import":
 			_status = importStatus;
 			break;
 	}
 	var _query = buildQuery(type, params);
 	if (!queryOk) {
-		console.log("baseUrl: ",baseUrl);
-		console.log("_query: ",_query);
+//		console.log("baseUrl: ",baseUrl);
+//		console.log("_query: ",_query);
 		_status.innerHTML = "Erreur";
 		_status.style.backgroundColor = "OrangeRed";
 		
 	} else {
 		_status.innerHTML = "Attente";
-		_status.style.backgroundColor = "OrangeRed";
+		_status.style.backgroundColor = "Orange";
 		fetch(baseUrl + _query)
 		.then(
 			function(response) {
@@ -764,11 +911,13 @@ function callOverpass(type, params) {
 					console.log('Looks like there was a problem. Status Code: ' +
 						response.status);
 					_status.innerHTML = "time out";
+					_status.style.backgroundColor = "OrangeRed";
 			   }
 			}
 		)
 		.catch(function(err) {
 			_status.innerHTML = err;
+		_status.style.backgroundColor = "OrangeRed";
 		 });
 	 }
 }
@@ -776,7 +925,7 @@ function callOverpass(type, params) {
 function display_result(_type, _data) {
 	switch(_type) {
 		case "around" :
-			display_resultAroundNew(_data);
+			display_resultAround(_data);
 		break;
 		case "meta" :
 			complete_tags_table(_data.elements[0]);
@@ -800,10 +949,10 @@ bCloseOsm.onclick = () =>{
 		show_hideOsm();
 	}
 
-b_request.onclick = () =>{queryAroundNew()}
+b_request.onclick = () =>{queryAround()}
 
 b_back_to_list.onclick = close_tags;
-b_call_osm.onclick = call_OSM;
+b_call_osm.onclick = show_in_OSM;
 
 osmHeader.onmouseover = dragosmDiv;
 function dragosmDiv(){
@@ -818,21 +967,20 @@ var osmMark = new L.CircleMarker(osm_latlng, {
 });
 var osmMov = moveableMarker(map, osmMark)
 	
-function queryAroundNew() {
+function queryAround() {
 	var aroundParams = {"_searchRadius" :searchRadius, "_osm_latlng":osm_latlng};
 	callOverpass("around", aroundParams);
 }
 
-function queryMetadataNew(_element) {
+function queryMetadata(_element) {
 	callOverpass("meta", _element);
 }
 
-function display_resultAroundNew(response_data) {
+function display_resultAround(response_data) {
 		objectsFound_array = response_data.elements;
-	//	console.log("objectsFound_array",objectsFound_array[0]);
 		tags_div.style.display = "none";
 		elements_div.style.display = "block";
-		init_table(elements_table, elements_table_head);
+		init_table(elements_table);
 		set_cells_event();
 		fill_elements_table();
 }
@@ -842,7 +990,6 @@ function setOsmSearchRadius() {
 	///	  var r = Math.pow(2,zoomDiff)* R_pixels * 0.95;  // R_pixels ??
 	var r = Math.pow(2,zoomDiff)* osmMark._radius * 0.95;
 	searchRadius = Math.round(r)
-	//		console.log('Z: '+map.getZoom()+ ',  R: '+searchRadius,osmMark._radius);
 }
 
 function latlngStr(_coordDegre) {
@@ -859,7 +1006,7 @@ var tags_table_head = document.getElementById("tags_table_head");
 var objectsFound_array = [];
 var currentObject;
 
-function init_table(_table, _table_head) {
+function init_table(_table) {
 	for (var i = _table.rows.length -1; i > 0; i--) {
 		_table.deleteRow(-1);
 	}
@@ -902,7 +1049,7 @@ function set_events(event) {
 		elements_table.rows[rowIndex].cells.item(1).style.backgroundColor = 'aqua';
 		
 		show_tags(rowIndex - 1, columnIndex, event);
-//		currentRow.style.backgroundColor = 'blue';
+	currentRow.style.backgroundColor = 'blue';
 //	.setStyle("backgroundColor: red");
 }
 
@@ -916,7 +1063,7 @@ function show_tags(row, column,evt) {
 	if (tags) {
 		fill_tags_table(currentObject);
 	}
-	queryMetadataNew(currentObject);
+	queryMetadata(currentObject);
 }
 
 function close_tags() {
@@ -990,14 +1137,13 @@ function addCell(tr, text) {
 }
 
 	var	osm_tab;
-	var osm_tab_name;
+//	var osm_tab_name;
 	
-function call_OSM() {
+function show_in_OSM() {
 	//https://www.openstreetmap.org/relation/
 	var url = "https://www.openstreetmap.org/";
 	url += currentObject.type + "/";
 	url += currentObject.id;
-//	console.log(url);
 //	window.open(url, "_blank");
 	if (!osm_tab) {
 		osm_tab = window.open(url, "_blank");
@@ -1032,6 +1178,13 @@ b_import.onclick = () => {
 	importOsm(subType);
 }
 
+/*
+b_showFeat.onclick = () => {
+		infoVisible = !infoVisible;
+		show_hideInfo(infoVisible);
+	fill_features_table();////
+}
+*/
 bCloseImport.onclick = () =>{	
 	osmMode = "none";
 	show_hideOsm();
@@ -1042,7 +1195,6 @@ var subType;
 
 
 function importOsm(_subType) {
-
 	var boundsObjTmp = //Fabras
 		{_southWest : { lat: 44.6399, lng: 4.2562 }, _northEast: {lat: 44.6600, lng: 4.3056 }};
 	boundsObjTmp = map.getBounds();
@@ -1050,36 +1202,19 @@ function importOsm(_subType) {
 	callOverpass("import", importParams);
 }
 
-function updateCalque(layerJson) {
-	var calque = calques[layerNum - 1]
-	calque.updateLayerX(layerJson, true);
-	calque.setStyle(styles[layerNum - 1]);
-	layerControl.removeLayer(calque.layer);
-	layerControl.addOverlay(calque.layer, calque.name);
-	overlaysVis.push(layerNum + 1);
-}
-
-	function display_resultImport(osm_data) {
-		var geojson_tmp;
-		try {
-			isrefFile = false;
-			geojson_tmp = osmtogeojson(osm_data, {flatProperties:false});
-//			geojson_tmp = osmtogeojson(osm_data, {flatProperties:true});
-			
-//console.dir("before ", geojson_tmp);
-			geojson_tmp1 = reformatJson(geojson_tmp);
-//console.dir("reformatted ", geojson_tmp1);
-			
-/*			var geojson_str = JSON.stringify(geojson_tmp);
-			geojson_str = geojson_str.replaceAll("id", "@id");
-			geojson_tmp = JSON.parse(geojson_str);*/
-			updateCalque(geojson_tmp1);
-		}
-		catch(err) {
-///			trucDiv.innerHTML += err;
-			console.log( err); 
-		}
+function display_resultImport(osm_data) {
+	var geojson_tmp;
+	try {
+		isrefFile = false;
+		geojson_tmp = osmtogeojson(osm_data, {flatProperties:false});		
+		geojson_tmp1 = reformatJson(geojson_tmp);
+		updateCalque(geojson_tmp1);
 	}
+	catch(err) {
+///			trucDiv.innerHTML += err;
+		console.log( err); 
+	}
+}
 	
 	function reformatJson(jsonIn)  {
 		var jsonOut = jsonIn;
@@ -1089,7 +1224,6 @@ function updateCalque(layerJson) {
 			});
 			delete jsonOut.features[i].properties["tags"];			
 		}
-////	console.log(jsonOut.features[0].properties);
 		return jsonOut;
 	}
 
@@ -1112,13 +1246,7 @@ function read_File(_file) {
 	reader.onload = function (evt) {	//onload : lecture terminée ok
 		input_Text = evt.target.result;
 		var layerJson = toJsonObj(input_Text);
-		var calque = calques[layerNum - 1]
-		calque.updateLayerX(layerJson, true);
-		calque.setStyle(styles[layerNum - 1]);
-		layerControl.removeLayer(calque.layer);
-		layerControl.addOverlay(calque.layer, calque.name);
-		overlaysVis.push(layerNum + 1);
-
+		updateCalque(layerJson);
 	}
 }
 
@@ -1157,7 +1285,6 @@ function toJsonTxt(gpxText) {
 			strTmp += propStart;
 			strTmp += '"name": ' + name;
 			strTmp += propEnd;
-//			console.log(name);
 		}
 		
 		///geometry
@@ -1186,14 +1313,11 @@ function toJsonTxt(gpxText) {
 		xmlDoc = parser.parseFromString(gpxText,"text/xml");
 		jsonTxt = jsonTxtStart;
 		var tracks = xmlDoc.getElementsByTagName("trk");
-	//	console.log(tracks.length);
 		for (var i = 0; i<tracks.length; i++) {
 			jsonTxt += trkStr(tracks[i]);
 				if (i < tracks.length - 1) {jsonTxt += ',';}
 		}
 		jsonTxt += jsonTxtEnd;
-	//	console.log(gpxText);
-	//	console.log(jsonTxt);
 		return jsonTxt;
 	}
 	catch (ex) {
@@ -1204,7 +1328,6 @@ function toJsonTxt(gpxText) {
 }
 
 function toJsonObj(jsonText) {
-//console.log(jsonText);
 	try {
 		if (jsonText.indexOf("<gpx") >= 0) {
 			jsonText = toJsonTxt(jsonText);
@@ -1226,23 +1349,19 @@ var styleNum = 0;
 
 b_test.onclick = test;
 function test() {
-/*	var boundsObjTmp = //Fabras
-		{_southWest : { lat: 44.6399, lng: 4.2562 }, _northEast: {lat: 44.6600, lng: 4.3056 }};
-	var importParams = {"_boundsObj" : boundsObjTmp};
-	*/
-////	var aroundParams = {"_searchRadius" :searchRadius, "_osm_latlng":osm_latlng};
-////	callOverpass("around", aroundParams);
-////	callOverpass("import", importParams);
-	var selectedSize = "xxx";
-	const radioButtons = document.querySelectorAll('input[name="subType"]');
-             for (const radioButton of radioButtons) {
-                if (radioButton.checked) {
-                    selectedSize = radioButton.value;
-                    break;
-                }
-            }
-alert(selectedSize);
+//console.log(calques[calqueIndex].layerJson.features);
+init_features_table();
+
+fill_features_table();
 }
+var showCount = 0;
+function show_overlayVis() {
+	showCount++;
+	var str = showCount + ' [' + overlaysVis + ']';
+	document.getElementById("statusTxt").innerHTML = str;
+}
+
+
 
 // region poub
 

@@ -86,7 +86,8 @@
 		display: block;
 	}
 	.d_menu:hover .b_menu {
-		background-color: #FFAA2A;
+/*		background-color: #FFAA2A;*/
+		background-color: orange;
 	}
 	
 	.b_menu {
@@ -108,21 +109,38 @@
 			
 	.d_sub button, label {
 		color: black;
-		background-color: #D4FF2A;
+		background-color: MediumSpringGreen;
+/*		background-color: #D4FF2A;*/
 		display: block;
 	}
 	.d_sub button:hover, label:hover {
-		background-color: #FF7F00;
+/*		background-color: #FF7F00;*/
+		background-color: orange;
 	}
 	
 	.header {
 		position: relative; 
 		width: 100%;
 		height:22px;
-		background-color: DarkGray;
+		background-color: Gray;
 		z-index:2;
 		cursor: move;
 	}
+	
+	.b_header {
+		background-color: MediumSpringGreen;
+	}
+	.b_header:hover {
+		background-color: orange;	
+	}
+	
+	.subHeader {
+		width: 100%;
+		height:22px;
+		background-color: lightGray;
+		z-index:2;	
+	}
+	
 	.b_close {
 		background-color: white;
 		color:red;
@@ -134,41 +152,38 @@
 		z-index:4;
 	}
 	
-	#infoDiv {
+	.overlayDiv {
 		position: absolute; 
-		width: 20%;
-		left: 35%;
-		top: 16px;
+		top: 18px;
 		background-color: lavender;
-		border: 1px solid blue;
+		border: 1px solid blue;	
+	}
+	
+	
+	#statusDiv {
+		right: 10%;
+		width: 20%;
 		resize: both;
 		overflow:hidden;
 		padding-bottom: 8px;
     }
 
-	
 	#curPtDiv {
-		position: absolute; 
+		left: 20px;
+		top: 150px;
 		width: 15%;
-		left: 35%;
-		top: 16px;
-		background-color: lavender;
-		border: 1px solid blue;
 		resize: both;
 		overflow:hidden;
     }
 	
 	.curPtSpan {
 		padding-left: 12px;	
+		padding-right: 12px;	
 	}
 	
 	#osmDiv {
-		position: absolute; 
+		left: 25%;
 		width: 566px;
-		left: 300px;
-		top: 35px;
-		background-color: lavender;
-		border: 1px solid blue;
 		resize: both;
 		overflow:hidden;
 		padding-bottom: 8px;
@@ -182,12 +197,9 @@
 	}
 	
 	#importDiv {
-		position: absolute; 
-		width: 300px;
-		left: 300px;
-		top: 35px;
-		background-color: lavender;
-		border: 1px solid blue;
+		left: 20px;
+		top: 150px;
+		width: 280px;
 		resize: both;
 		overflow:hidden;
 		padding-bottom: 8px;
@@ -198,12 +210,21 @@
 		padding: 8px;
 		overflow: auto;
 	}
-/*	#import_div {
+
+	#infoDiv {
+		left: 650px;
+		width: 560px;
+		resize: both;
+		overflow:hidden;
+		padding-bottom: 8px;
+    }
+
+	#features_div {
 		max-height: 300px;	
 		padding: 8px;
 		overflow: auto;
-		display: none;
-	}*/
+		display: block;
+	}
 	
 	#tags_div {
 		max-height: 300px;	
@@ -263,6 +284,7 @@
 					<label id= "input_fileX"  for="file_selectX">
 							Ajouter un fichier</label>
 					<button id="b_osmImport" class= "b_submenu" >Importer OSM</button>
+					<button id="b_undo" class= "b_submenu" >Annuler</button>
 					<button id="b_center_file" class= "b_submenu" >Centrer</button>
 					<button id="b_close_file" class= "b_submenu" >Vider</button>
 					<button id="b_save_file" class= "b_submenu" style="display:none"  >Enregistrer</button>
@@ -282,6 +304,7 @@
 				<button id="b_aff" class= "b_menu">Affiche</button>
 					<div id="dSub_aff" class= "d_sub" >
 						<button id="b_info" class= "b_submenu" >Info</button>
+						<button id="b_status" class= "b_submenu" >Status</button>
 						<button id="b_version" class= "b_submenu" >0.0</button>
 					</div>
 			</div>		
@@ -290,16 +313,17 @@
 		<div id="map" class="map"></div>
 		<div id="zoom_div">z:</div>
 	</div>
-	<div id="infoDiv" style ="display: none" >		
-		<div id= "infoHeader" class= "header" >
-			Info&nbsp 
-			<button id="bCloseInfo" class = "b_close">X</button>
+	
+	<div id="statusDiv" style ="display: none" class = "overlayDiv" >		
+		<div id= "statusHeader" class= "header" >
+			Status&nbsp 
+			<button id="bCloseStatus" class = "b_close">X</button>
 		</div>
-		<div id= "infoTxt">
+		<div id= "statusTxt">
 		</div>
 	</div>
 	
-	<div id= "curPtDiv" style ="display: none" >
+	<div id= "curPtDiv" style ="display: none" class = "overlayDiv" >
 		<div id= "curPtHeader" class= "header" >
 			<span>Point</span>
 			<button id="b_copyCoords" >Copier coords</button>
@@ -309,7 +333,7 @@
 		<span id= "curPtElev" class= "curPtSpan" ></span>
 	</div>
 
-	<div id="osmDiv" style ="display: none" >		
+	<div id="osmDiv" style ="display: none" class = "overlayDiv"  >		
 		<div id= "osmHeader" class= "header">
 			<span id= "headerTitlle">OpenStreetMap</span> 
 			<button id="b_request" class= "b_header">Rechercher</button>
@@ -317,15 +341,14 @@
 			<button id="bCloseOsm" class = "b_close">X</button>
 		</div>
 		<div id= "elements_div">
-			<div id="query" style= "display: none"></div>
-			<div class="header">Elements</div>
+			<div class="subHeader">Elements</div>
 			<table id= "elements_table" >
 				<tr id="elements_table_head">
 				</tr> 
 			</table>
 		</div>
 		<div id= "tags_div">
-			<div id="tags_header" class="header">Tags&nbsp&nbsp
+			<div id="tags_header" class="subHeader">Tags&nbsp&nbsp
 				<button id = "b_back_to_list" class= "b_header">Retour à la liste</button>		
 				<button id= "b_call_osm" class= "b_header">Voir sur OSM</button>
 			</div>
@@ -335,16 +358,17 @@
 			</table>
 		</div>
 	</div>
-	<div id= "importDiv" style= "display: none">
+	
+	<div id= "importDiv" style= "display: none" class = "overlayDiv" >
 		<div id= "importHeader" class= "header">
 			<span>Importer OSM </span> 
 			<button id="b_import" class= "b_header">Importer</button>
+<!--			<button id="b_showFeat" class= "b_header">Détails</button>-->
 			<span id="importStatus" style= "padding: 2px"></span>
 			<button id="bCloseImport" class = "b_close">X</button>
 		</div>
 		<div id= "importDivIn">
-			<div id="query"></div>
-			<div class="header">Elements</div>
+			<div class="subHeader">Elements</div>
 			<input type="radio" name="subType" value="route" id="route" checked>
 			<span for="route">Routes</span><br>
 			<input type="radio" name="subType" value="guidepost" id="guidepost">
@@ -356,10 +380,27 @@
 			<input type="radio" name="subType" value="other" id="other">
 			<span for="xs">Autre</span>
 		</div>
-
-
 	</div>
 
+	<div id="infoDiv" style ="display: none" class = "overlayDiv">		
+		<div id= "infoHeader" class= "header" >
+			Info&nbsp 
+			<button id="b_layer_1b" class= "b_header" style="background-color:Orange" >Calque 1</button>
+			<button id="b_layer_2b" class= "b_header" >Calque 2</button>
+			<button id="b_layer_3b" class= "b_header" >Calque 3</button>
+			<span id="featuresCount" style= "padding: 2px; background-color: Azure">
+				&nbsp0 éléments</span>
+			<button id="bCloseInfo" class = "b_close">X</button>
+		</div>
+		<div id= "features_div">
+			<div class="subHeader">Features</div>
+			<table id= "features_table" >
+				<tr id="features_table_head">
+				</tr> 
+			</table>
+		</div>		
+	</div>
+	
 
 	
 	<script src='osmtogeojson.js'></script> 
