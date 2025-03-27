@@ -1,5 +1,5 @@
 ///
-const version ="0.4.1";
+const version ="0.5.0";
 const subV = "";
 // 0.1.1 : lecture gpx ou json
 // 0.2.1 : essai responsive design
@@ -9,6 +9,8 @@ const subV = "";
 // 0.3.3 : Waymarked Trails
 // 0.4.0 : gestion calques ok
 // 0.4.1 : tableau de features
+// 0.5.0 : localisation (début)
+
 window.onload = (event) => {
 	b_version.innerHTML = 'V: ' + version + subV; 
 	document.title = 'Carto_tools  V_' + version + subV;
@@ -51,7 +53,11 @@ var OSMLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
 	});
 	
 // region RGE alti
-	var RGEaltiLayer = L.tileLayer('https://data.geopf.fr/wmts?service=WMTS&format=image/png&version=1.0.0&request=GetTile&style=normal&tilematrixset=PM&tilematrix={z}&tilerow={y}&tilecol={x}&layer=IGNF_ELEVATION.ELEVATIONGRIDCOVERAGE.SHADOW', {
+	var RGEaltiLayer = L.tileLayer(
+	'https://data.geopf.fr/wmts?service=WMTS&format=image/png&version=1.0.0&request=GetTile&style=normal&tilematrixset=PM&tilematrix={z}&tilerow={y}&tilecol={x}&layer=IGNF_ELEVATION.ELEVATIONGRIDCOVERAGE.SHADOW', { 
+
+////IGNF_ELEVATION  -> IGNF_LIDAR-HD_MNT_ELEVATION
+
 		maxNativeZoom:17,
  		maxZoom: 19,
 		attribution: '<a href="https://geoservices.ign.fr/" target="_blank">IGN RGE alti</a>'
@@ -65,7 +71,7 @@ var url_strava2 = 'https://strava-heatmap.tiles.freemap.sk/run/purple/{z}/{x}/{y
 
 var url_strava3 = 'https://heatmap-external-a.strava.com/tiles-auth/run/purple/{z}/{x}/{y}.png?Key-Pair-Id=APKAIDPUN4QMG7VUQPSA&Policy=eyJTdGF0ZW1lbnQiOiBbeyJSZXNvdXJjZSI6Imh0dHBzOi8vaGVhdG1hcC1leHRlcm5hbC0qLnN0cmF2YS5jb20vKiIsIkNvbmRpdGlvbiI6eyJEYXRlTGVzc1RoYW4iOnsiQVdTOkVwb2NoVGltZSI6MTczNjc4MDc2Mn0sIkRhdGVHcmVhdGVyVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNzM1NTU2NzYyfX19XX0_&Signature=cnbRKnURivt-1m8zfEChfy4tkMlNXm8jygO5a9FyKP40Y-TQGZzqdhPpl6sKgGMRr-59Lwjt3vMnM-9JdxXbLC1Hp~dd8IYUeOfGZBxTxbUm6Os0YyMUZBW7Z-ZG~H0zCcCRlhAL3vsc7StrRI8oCFxBbY4A~BgOWTAivLDHnYofcUr66DqTMAZyObhrewEyj1BkUyq96gNYDc7fDIPKaIf19nugtUY3k69BoJ03x0juUqjnbk~F2OVurOBulnYc2w15jGNlLqZwuhJ2v4ABmRZbJtOnE~vFLoYpwfC212eT0-zem95xyPRwk8jN00x7SaBrXmN90IBaGRvJm-Ak9w__';
 
-	var StavaLayer = L.tileLayer(	url_strava1,{
+	var StavaLayer = L.tileLayer(	url_strava2,{
 		maxNativeZoom:15,
  		maxZoom: 19,
 		minZoom: 13,
@@ -1345,15 +1351,88 @@ function toJsonObj(jsonText) {
 
 // endregion
 
-var styleNum = 0;
 
 b_test.onclick = test;
 function test() {
 //console.log(calques[calqueIndex].layerJson.features);
-init_features_table();
-
-fill_features_table();
+geoFindMe();
 }
+
+var statusTxt =	document.getElementById("statusTxt");
+
+
+// region geolocation
+
+var locPtMark = new L.CircleMarker(curPt_latlng, //for initialisation
+	{
+		radius: 4,
+		fillColor: "blue",
+		fillOpacity: 0.6,
+		color: "blue",
+		weight: 1					
+	}
+);
+
+var locPtAcc = new L.CircleMarker(curPt_latlng, //for initialisation
+	{
+		radius: 10,
+		fillOpacity: 0.0,
+		color: "blue",
+		weight: 1					
+	}
+);
+
+/////stackoverflow.com/questions/27545098/leaflet-calculating-meters-per-pixel-at-zoom-level
+/// mPP = 40075016.686 * Math.abs(Math.cos(map.getCenter().lat * Math.PI/180)) / Math.pow(2, map.getZoom()+8);
+
+function metersPerPixel() {
+  var truc = 40075016.686 * Math.abs(Math.cos(map.getCenter().lat * Math.PI/180)) / Math.pow(2, map.getZoom()+8);
+  return truc;
+ }
+
+function geoFindMe() {
+
+
+  function success(position) {
+    const latitude = position.coords.latitude;
+    const longitude = position.coords.longitude;
+	const accuracy = position.coords.accuracy;
+	const ele = position.coords.altitude;
+	const eleAcc = position.coords.altitudeAccuracy;
+
+    statusTxt.textContent = "";
+//    console.log(latitude, longitude);
+    console.log(position.coords);
+	statusTxt.innerHTML = 
+		`Lat: ${latitude} <br> 
+		Long: ${longitude} <br> 
+		Acc:${accuracy} <br> 
+		Ele: ${ele} <br> 
+		EleAcc: ${eleAcc} 
+		`;
+	locPtMark.setLatLng([latitude, longitude]);
+	locPtAcc.setLatLng([latitude, longitude]);
+	var r = accuracy/metersPerPixel();
+	locPtAcc.setRadius(r);
+	locPtMark.addTo(map);
+	locPtAcc.addTo(map);
+  }
+
+  function error() {
+    statusTxtstatusTxt.textContent = "Unable to retrieve your location";
+  }
+
+  if (!navigator.geolocation) {
+    statusTxt.textContent = "Geolocation is not supported by your browser";
+  } else {
+    statusTxt.textContent = "Locating…";
+    navigator.geolocation.getCurrentPosition(success, error);
+  }
+}
+
+
+// endregion
+
 var showCount = 0;
 function show_overlayVis() {
 	showCount++;
