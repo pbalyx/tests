@@ -265,7 +265,7 @@ function updateCalque(_addedJson) {
 	calque.setStyle(styles[calqueIndex]); //must be done each time (?)
 	overlaysVis_remove(calque.name);
 	overlaysVis.push(calque.name);
-		show_overlayVis();
+///		show_overlayVis();
 }
 
 
@@ -343,7 +343,7 @@ map.on("moveend", function () {
 		}
 */
 	}
-	show_overlayVis();
+///	show_overlayVis();
 	map_moving = false;
 });
 
@@ -377,6 +377,7 @@ map.on("click", function(e){
 
 map.on("zoomend", function(ev) {		
 	setOsmSearchRadius();
+	updatelocPtAccRadius();
 	zoom_div.innerHTML = 'zoom: ' + map.getZoom();
 });
 
@@ -1352,15 +1353,6 @@ function toJsonObj(jsonText) {
 // endregion
 
 
-b_test.onclick = test;
-function test() {
-//console.log(calques[calqueIndex].layerJson.features);
-geoFindMe();
-}
-
-var statusTxt =	document.getElementById("statusTxt");
-
-
 // region geolocation
 
 var locPtMark = new L.CircleMarker(curPt_latlng, //for initialisation
@@ -1389,20 +1381,24 @@ function metersPerPixel() {
   var truc = 40075016.686 * Math.abs(Math.cos(map.getCenter().lat * Math.PI/180)) / Math.pow(2, map.getZoom()+8);
   return truc;
  }
+ 
+ function updatelocPtAccRadius() {
+ 	var r = accuracy/metersPerPixel();
+	locPtAcc.setRadius(r);
+ }
+ 
+ var accuracy = 100;
 
 function geoFindMe() {
-
-
   function success(position) {
     const latitude = position.coords.latitude;
     const longitude = position.coords.longitude;
-	const accuracy = position.coords.accuracy;
+	accuracy = position.coords.accuracy;
 	const ele = position.coords.altitude;
 	const eleAcc = position.coords.altitudeAccuracy;
-
     statusTxt.textContent = "";
 //    console.log(latitude, longitude);
-    console.log(position.coords);
+//    console.log(position.coords);
 	statusTxt.innerHTML = 
 		`Lat: ${latitude} <br> 
 		Long: ${longitude} <br> 
@@ -1412,8 +1408,7 @@ function geoFindMe() {
 		`;
 	locPtMark.setLatLng([latitude, longitude]);
 	locPtAcc.setLatLng([latitude, longitude]);
-	var r = accuracy/metersPerPixel();
-	locPtAcc.setRadius(r);
+	updatelocPtAccRadius();
 	locPtMark.addTo(map);
 	locPtAcc.addTo(map);
   }
@@ -1433,16 +1428,25 @@ function geoFindMe() {
 
 // endregion
 
-var showCount = 0;
+
+b_test.onclick = test;
+function test() {
+//console.log(calques[calqueIndex].layerJson.features);
+geoFindMe();
+}
+
+var statusTxt =	document.getElementById("statusTxt");
+
+
+// region poub
+
+/*var showCount = 0;
 function show_overlayVis() {
 	showCount++;
 	var str = showCount + ' [' + overlaysVis + ']';
 	document.getElementById("statusTxt").innerHTML = str;
 }
 
-
-
-// region poub
-
+*/
 
 // endregion
