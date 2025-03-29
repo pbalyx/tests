@@ -1,6 +1,6 @@
 ///
 const version ="0.5.0";
-const subV = "";
+const subV = "_a";
 // 0.1.1 : lecture gpx ou json
 // 0.2.1 : essai responsive design
 // 0.3.0 : objets calques 
@@ -377,7 +377,7 @@ map.on("click", function(e){
 
 map.on("zoomend", function(ev) {		
 	setOsmSearchRadius();
-	updatelocPtAccRadius();
+	updateLocPtAccRadius();
 	zoom_div.innerHTML = 'zoom: ' + map.getZoom();
 });
 
@@ -534,6 +534,17 @@ b_osmExplore.onclick = ()=>{
 	if (osmMode != "explore") { osmMode = "explore" } else {osmMode = "none"};
 //	osmExploreMode = !osmExploreMode;
 	show_hideOsm();
+}
+
+//----------- GPS --------------
+
+b_loc.onclick = ()=> {
+	geoFindMe(false);
+}
+
+b_center_loc.onclick = ()=> {
+	geoFindMe(true);
+//	alert('to do');
 }
 
 //endregion
@@ -1358,9 +1369,9 @@ function toJsonObj(jsonText) {
 var locPtMark = new L.CircleMarker(curPt_latlng, //for initialisation
 	{
 		radius: 4,
-		fillColor: "blue",
+		fillColor: "red",
 		fillOpacity: 0.6,
-		color: "blue",
+		color: "red",
 		weight: 1					
 	}
 );
@@ -1369,8 +1380,8 @@ var locPtAcc = new L.CircleMarker(curPt_latlng, //for initialisation
 	{
 		radius: 10,
 		fillOpacity: 0.0,
-		color: "blue",
-		weight: 1					
+		color: "red",
+		weight: 2					
 	}
 );
 
@@ -1382,14 +1393,15 @@ function metersPerPixel() {
   return truc;
  }
  
- function updatelocPtAccRadius() {
+ function updateLocPtAccRadius() {
  	var r = accuracy/metersPerPixel();
 	locPtAcc.setRadius(r);
  }
  
  var accuracy = 100;
 
-function geoFindMe() {
+function geoFindMe(setCenter) {
+
   function success(position) {
     const latitude = position.coords.latitude;
     const longitude = position.coords.longitude;
@@ -1400,22 +1412,33 @@ function geoFindMe() {
 //    console.log(latitude, longitude);
 //    console.log(position.coords);
 	statusTxt.innerHTML = 
-		`Lat: ${latitude} <br> 
-		Long: ${longitude} <br> 
+		`Lat: ${latitude.toFixed(5)} <br> 
+		Long: ${longitude.toFixed(5)} <br> 
 		Acc:${accuracy} <br> 
 		Ele: ${ele} <br> 
 		EleAcc: ${eleAcc} 
 		`;
 	locPtMark.setLatLng([latitude, longitude]);
 	locPtAcc.setLatLng([latitude, longitude]);
-	updatelocPtAccRadius();
+	updateLocPtAccRadius();
 	locPtMark.addTo(map);
 	locPtAcc.addTo(map);
+	if (setCenter) {
+		map.setView([latitude, longitude]);
+//		console.log("setCenter" );
+	}
   }
 
   function error() {
     statusTxtstatusTxt.textContent = "Unable to retrieve your location";
   }
+  
+  const options = {
+  enableHighAccuracy: true,
+  maximumAge: 10000,
+  timeout: 10000,
+};
+
 
   if (!navigator.geolocation) {
     statusTxt.textContent = "Geolocation is not supported by your browser";

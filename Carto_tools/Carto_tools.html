@@ -161,9 +161,9 @@
 	
 	
 	#statusDiv {
-		right: 10%;
-		width: 20%;
-		resize: both;
+		left: 20px;
+		top: 140px;
+		width: 150px;
 		overflow:hidden;
 		padding-bottom: 8px;
     }
@@ -171,7 +171,7 @@
 	#curPtDiv {
 		left: 20px;
 		top: 150px;
-		width: 15%;
+		width: 150px;
 		resize: both;
 		overflow:hidden;
     }
@@ -285,7 +285,7 @@
 							Ajouter un fichier</label>
 					<button id="b_osmImport" class= "b_submenu" >Importer OSM</button>
 					<button id="b_undo" class= "b_submenu" >Annuler</button>
-					<button id="b_center_file" class= "b_submenu" >Centrer</button>
+					<button id="b_center_file" class= "b_submenu" >Centrer sur calque</button>
 					<button id="b_close_file" class= "b_submenu" >Vider</button>
 					<button id="b_save_file" class= "b_submenu" style="display:none"  >Enregistrer</button>
 				</div>
@@ -297,6 +297,15 @@
 						<button id="b_coords" class= "b_submenu" >Coordonnées</button>
 						<button id="b_osmExplore" class= "b_submenu" >Explorer OSM&nbsp;&nbsp;</button>
 						<button id="b_test" class= "b_submenu" >Test</button>
+					</div>
+			</div>		
+
+			<div id= "d_loc" class= "d_menu">
+				<button id="b_aff" class= "b_menu">GPS</button>
+					<div id="dSub_aff" class= "d_sub" >
+						<button id="b_loc" class= "b_submenu" >Localisation</button>
+						<button id="b_center_loc" class= "b_submenu" >Centrer</button>
+						<button id="b_follow" class= "b_submenu" >Suivre</button>
 					</div>
 			</div>		
 
