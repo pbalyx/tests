@@ -1,6 +1,6 @@
 ///
 const version ="0.5.0";
-const subV = "_a";
+const subV = "_b";
 // 0.1.1 : lecture gpx ou json
 // 0.2.1 : essai responsive design
 // 0.3.0 : objets calques 
@@ -1399,24 +1399,69 @@ function metersPerPixel() {
  }
  
  var accuracy = 100;
+ 
+ function formattedTime1(date) {
+	 // Hours part from the timestamp
+	var hours = date.getHours();
+	// Minutes part from the timestamp
+	var minutes = "0" + date.getMinutes();
+	// Seconds part from the timestamp
+	var seconds = "0" + date.getSeconds();
+	// Will display time in 10:30:23 format
+	var formattedTimeStr = hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
+	console.log(date_format(date,'H:i:s')); // 12:00:54
+	return formattedTimeStr;
+ }
+function date_format(unix_timestamp,format){
+    const date=new Date(unix_timestamp);
+    const dateObject={
+        'Y' : date.getFullYear(),
+        'M' : String(date.getMonth()).padStart(2,'0'),
+        'D' : String(date.getDate()).padStart(2,'0'),
+        'h' : String(date.getHours()).padStart(2,'0'),
+        'm' : String(date.getMinutes()).padStart(2,'0'),
+        's' : String(date.getSeconds()).padStart(2,'0'),
+    };
+    var dateString='';
+    for (let char of format) {
+        if(char in dateObject){
+            dateString+=dateObject[char];
+        }else{
+            dateString+=char;
+        }
+    }
+    return dateString;
+}
 
-function geoFindMe(setCenter) {
+function gpxFormattedDate(date) {
+	var formattedStr = date_format(date,'Y-M-DTh:m:sZ'); // 12:00:54
+	return formattedStr;
+}
 
-  function success(position) {
-    const latitude = position.coords.latitude;
+function formattedTime(date) {
+	var formattedStr = date_format(date,'h:m:s'); // 12:00:54
+	return formattedStr;
+ }
+ 
+ function decodePosition(position, setCenter) {
+     const latitude = position.coords.latitude;
     const longitude = position.coords.longitude;
 	accuracy = position.coords.accuracy;
 	const ele = position.coords.altitude;
 	const eleAcc = position.coords.altitudeAccuracy;
-    statusTxt.textContent = "";
-//    console.log(latitude, longitude);
+	const unixTime = position.timestamp;
+//	var timeStr = unixTime.toGMTString();
+var date = new Date(unixTime);
+var timeStr = formattedTime(date);
+   console.log(date);
 //    console.log(position.coords);
 	statusTxt.innerHTML = 
 		`Lat: ${latitude.toFixed(5)} <br> 
 		Long: ${longitude.toFixed(5)} <br> 
 		Acc:${accuracy} <br> 
 		Ele: ${ele} <br> 
-		EleAcc: ${eleAcc} 
+		EleAcc: ${eleAcc} <br>
+		time: ${timeStr}
 		`;
 	locPtMark.setLatLng([latitude, longitude]);
 	locPtAcc.setLatLng([latitude, longitude]);
@@ -1427,10 +1472,17 @@ function geoFindMe(setCenter) {
 		map.setView([latitude, longitude]);
 //		console.log("setCenter" );
 	}
+
+}
+
+function geoFindMe(setCenter) {
+
+  function success(position) {
+	decodePosition(position, setCenter);
   }
 
   function error() {
-    statusTxtstatusTxt.textContent = "Unable to retrieve your location";
+    statusTxt.textContent = "Unable to retrieve your location";
   }
   
   const options = {
@@ -1439,12 +1491,11 @@ function geoFindMe(setCenter) {
   timeout: 10000,
 };
 
-
   if (!navigator.geolocation) {
     statusTxt.textContent = "Geolocation is not supported by your browser";
   } else {
     statusTxt.textContent = "Locating…";
-    navigator.geolocation.getCurrentPosition(success, error);
+    navigator.geolocation.getCurrentPosition(success, error, options);
   }
 }
 
