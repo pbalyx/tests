@@ -172,15 +172,13 @@
 	#curPtDiv {
 		left: 20px;
 		top: 150px;
-		width: 150px;
+		width: 200px;
 		resize: both;
 		overflow:hidden;
+/*		padding-left: 12px;	
+		padding-right: 12px;	*/
     }
 	
-	.curPtSpan {
-		padding-left: 12px;	
-		padding-right: 12px;	
-	}
 	
 	#osmDiv {
 		left: 25%;
@@ -275,13 +273,14 @@
 					<button id="b_layer_1" class= "b_submenu" >Calque 1 -x-</button>
 					<button id="b_layer_2" class= "b_submenu" >Calque 2</button>
 					<button id="b_layer_3" class= "b_submenu" >Calque 3</button>
-				</div>			
+				</div>		
 			</div>
 			
 			<div id= "d_Action" class= "d_menu" >
 				<button id="b_Action" class= "b_menu" >Action</button>
 				<div id="sub_fileX" class= "d_sub">
-					<input type="file" id="file_selectX" class = "input_file" />	
+					<button id="b_calque" class= "b_submenu" style="display:none"   >Choix Calque</button>
+				<input type="file" id="file_selectX" class = "input_file" />	
 					<label id= "input_fileX"  for="file_selectX">
 							Ajouter un fichier</label>
 					<button id="b_osmImport" class= "b_submenu" >Importer OSM</button>
@@ -293,10 +292,11 @@
 			</div>
 			
 			<div id= "d_tools" class= "d_menu">
-				<button id="b_tools" class= "b_menu">Outils</button>
+				<button id="b_tools" class= "b_menu">Point</button>
 					<div id="dSub_tools" class= "d_sub" >
 						<button id="b_coords" class= "b_submenu" >Coordonnées</button>
-						<button id="b_osmExplore" class= "b_submenu" >Explorer OSM&nbsp;&nbsp;</button>
+						<button id="b_osmExplore" class= "b_submenu" >Explorer OSM</button>
+						<button id="b_centerPoint" class= "b_submenu" >Centrer</button>
 						<button id="b_test" class= "b_submenu" >Test</button>
 					</div>
 			</div>		
@@ -306,7 +306,9 @@
 					<div id="dSub_aff" class= "d_sub" >
 						<button id="b_loc" class= "b_submenu" >Localisation</button>
 						<button id="b_center_loc" class= "b_submenu" >Centrer</button>
-						<button id="b_follow" class= "b_submenu" >Suivre</button>
+						<button id="b_wpt" class= "b_submenu" >Add wpt</button>
+						<button id="b_trkpt" class= "b_submenu" >Add trkpt</button>
+						<button id="b_save_gpx" class= "b_submenu" >Save GPX</button>
 					</div>
 			</div>		
 
@@ -336,11 +338,16 @@
 	<div id= "curPtDiv" style ="display: none" class = "overlayDiv" >
 		<div id= "curPtHeader" class= "header" >
 			<span>Point</span>
-			<button id="b_copyCoords" >Copier coords</button>
+			<button id="b_copyCoords" >Copier</button>
+			<button id="b_editCoords" >Editer</button>
 			<button id="bCloseCurPt" class = "b_close">X</button>
 		</div>	
-		<span id= "curPtLonLat" class= "curPtSpan" ></span><br>
-		<span id= "curPtElev" class= "curPtSpan" ></span>
+		<div id= "coordSpan" ></div>
+		<div id= "editCoordsDiv" style ="display: none" >
+			<input type="text" id= "curPtLonLat" ></input> 
+			<button id="b_editOk">Ok</button>
+		</div>
+		<span id= "curPtElev"></span>
 	</div>
 
 	<div id="osmDiv" style ="display: none" class = "overlayDiv"  >		

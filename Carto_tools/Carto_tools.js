@@ -1,6 +1,6 @@
 ///
-const version ="0.5.0";
-const subV = "_b";
+const version ="0.5.1";
+const subV = "";
 // 0.1.1 : lecture gpx ou json
 // 0.2.1 : essai responsive design
 // 0.3.0 : objets calques 
@@ -370,6 +370,7 @@ map.on("click", function(e){
 		osmMark.setLatLng(osm_latlng);
 	} else {
 		curPt_latlng = e.latlng;
+//		console.log(curPt_latlng);
 		curPtMark.setLatLng(curPt_latlng);
 		if (coordsMode) { updateCoords();} 
 	}
@@ -441,6 +442,10 @@ function moveableMarker(map, marker) {
 // region menu
 
 var calqueIndex = 0;
+
+b_calque.onclick = ()=>{
+alert("A faire");
+}
 var sub_layer = document.getElementById("sub_layer");
 b_layer_1.onclick = setLayer;
 b_layer_2.onclick = setLayer;
@@ -530,6 +535,12 @@ b_coords.onclick = ()=> {
 	show_hideCoords(coordsMode);
 }
 
+b_centerPoint.onclick = ()=> {
+	map.setView(curPt_latlng);
+
+
+}
+
 b_osmExplore.onclick = ()=>{
 	if (osmMode != "explore") { osmMode = "explore" } else {osmMode = "none"};
 //	osmExploreMode = !osmExploreMode;
@@ -539,12 +550,24 @@ b_osmExplore.onclick = ()=>{
 //----------- GPS --------------
 
 b_loc.onclick = ()=> {
-	geoFindMe(false);
+	geoFindMe("loc");
 }
 
 b_center_loc.onclick = ()=> {
-	geoFindMe(true);
+	geoFindMe("center");
 //	alert('to do');
+}
+
+b_wpt.onclick = ()=> {
+	geoFindMe("wpt");
+}
+
+b_trkpt.onclick = ()=> {
+	geoFindMe("trkpt");
+}
+
+b_save_gpx.onclick = ()=> {
+  saveGpx();
 }
 
 //endregion
@@ -555,7 +578,7 @@ var curPt_latlng = L.latLng(map.getCenter());
 //var curPt_latlng = L.latLng([0,0]);
 var curPtDiv = document.getElementById('curPtDiv');
 var curPtHeader = document.getElementById('curPtHeader');
-var curPtLonLat = document.getElementById('curPtLonLat');
+var coordSpan = document.getElementById('coordSpan');
 var curPtElev = document.getElementById('curPtElev');
 
 var coordsMode = false;
@@ -593,7 +616,8 @@ var curPtMov = moveableMarker(map, curPtMark)	//même marker mais déplaçable
 
 function updateCoords(){ 
 	var latLngStr = curPt_latlng.lng.toFixed(5)+ ', ' + curPt_latlng.lat.toFixed(5);
-	curPtLonLat.innerHTML = latLngStr;
+//	curPtLonLat.value = latLngStr;
+	coordSpan.innerHTML = latLngStr;
 	getPointElev(latLngStr);
 }
 
@@ -605,7 +629,30 @@ function dragcurPtDiv(){
 b_copyCoords.onclick = copyCoords;	
 function copyCoords() {
 	//alert("xxx");
-	navigator.clipboard.writeText(curPtLonLat.innerHTML)
+//	navigator.clipboard.writeText(curPtLonLat.value)
+	navigator.clipboard.writeText(coordSpan.innerHTML)
+}
+
+b_editCoords.onclick = ()=> {
+	b_editCoords.style.display = "none";
+	coordSpan.style.display = "none";
+	editCoordsDiv.style.display = "block";
+}
+
+b_editOk.onclick = ()=> {
+	decodeEdit(curPtLonLat.value);
+	b_editCoords.style.display = "inline";
+	coordSpan.style.display = "block";
+	editCoordsDiv.style.display = "none";
+}
+
+function decodeEdit(lonLatStr) {
+	lonLatSplit = lonLatStr.split(',');
+	ptLatlng = L.latLng(lonLatSplit[1], lonLatSplit[0]);
+	curPt_latlng = ptLatlng;
+	curPtMark.setLatLng(curPt_latlng);
+	updateCoords();
+	console.log(ptLatlng);
 }
 	
 // region elev
@@ -1363,7 +1410,6 @@ function toJsonObj(jsonText) {
 
 // endregion
 
-
 // region geolocation
 
 var locPtMark = new L.CircleMarker(curPt_latlng, //for initialisation
@@ -1385,33 +1431,18 @@ var locPtAcc = new L.CircleMarker(curPt_latlng, //for initialisation
 	}
 );
 
-/////stackoverflow.com/questions/27545098/leaflet-calculating-meters-per-pixel-at-zoom-level
-/// mPP = 40075016.686 * Math.abs(Math.cos(map.getCenter().lat * Math.PI/180)) / Math.pow(2, map.getZoom()+8);
-
 function metersPerPixel() {
   var truc = 40075016.686 * Math.abs(Math.cos(map.getCenter().lat * Math.PI/180)) / Math.pow(2, map.getZoom()+8);
   return truc;
  }
  
- function updateLocPtAccRadius() {
- 	var r = accuracy/metersPerPixel();
+function updateLocPtAccRadius() {
+	var r = accuracy/metersPerPixel();
 	locPtAcc.setRadius(r);
- }
- 
- var accuracy = 100;
- 
- function formattedTime1(date) {
-	 // Hours part from the timestamp
-	var hours = date.getHours();
-	// Minutes part from the timestamp
-	var minutes = "0" + date.getMinutes();
-	// Seconds part from the timestamp
-	var seconds = "0" + date.getSeconds();
-	// Will display time in 10:30:23 format
-	var formattedTimeStr = hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
-	console.log(date_format(date,'H:i:s')); // 12:00:54
-	return formattedTimeStr;
- }
+}
+
+var accuracy = 100;
+
 function date_format(unix_timestamp,format){
     const date=new Date(unix_timestamp);
     const dateObject={
@@ -1443,9 +1474,10 @@ function formattedTime(date) {
 	return formattedStr;
  }
  
- function decodePosition(position, setCenter) {
-     const latitude = position.coords.latitude;
+ function decodePosition(position, option) {
+    const latitude = position.coords.latitude;
     const longitude = position.coords.longitude;
+var gpsLatLon = L.latLng(latitude, longitude);	
 	accuracy = position.coords.accuracy;
 	const ele = position.coords.altitude;
 	const eleAcc = position.coords.altitudeAccuracy;
@@ -1453,14 +1485,15 @@ function formattedTime(date) {
 //	var timeStr = unixTime.toGMTString();
 var date = new Date(unixTime);
 var timeStr = formattedTime(date);
-   console.log(date);
-//    console.log(position.coords);
+    console.log(position);
+//	console.log(trkptNode(position));
+//	console.log(wptNode(position));
 	statusTxt.innerHTML = 
 		`Lat: ${latitude.toFixed(5)} <br> 
 		Long: ${longitude.toFixed(5)} <br> 
-		Acc:${accuracy} <br> 
+		Accuracy:${accuracy} <br> 
 		Ele: ${ele} <br> 
-		EleAcc: ${eleAcc} <br>
+		EleAccuracy: ${eleAcc} <br>
 		time: ${timeStr}
 		`;
 	locPtMark.setLatLng([latitude, longitude]);
@@ -1468,17 +1501,27 @@ var timeStr = formattedTime(date);
 	updateLocPtAccRadius();
 	locPtMark.addTo(map);
 	locPtAcc.addTo(map);
-	if (setCenter) {
-		map.setView([latitude, longitude]);
-//		console.log("setCenter" );
+	switch (option) {
+		case "center" :
+			map.setView([latitude, longitude]);
+			break;
+		case "wpt" :
+			addWpt(position);
+			break;
+		case "trkpt" :
+			addTrkpt(position);
+			break;
+		default :
+		
+//		console.log("option" );
 	}
 
 }
 
-function geoFindMe(setCenter) {
+function geoFindMe(option) {  /// option : loc, center, wpt, trkpt
 
   function success(position) {
-	decodePosition(position, setCenter);
+	decodePosition(position, option);
   }
 
   function error() {
@@ -1499,14 +1542,139 @@ function geoFindMe(setCenter) {
   }
 }
 
+//----------------------------
+
+var wptNodes = [];
+var trkptNodes = [];
+
+var fileNameToSave = "carto.gpx";
+
+function addWpt(_position) {
+	wptNodes.push(wptNode(_position));
+}
+
+function addTrkpt(_position) {
+	trkptNodes.push(trkptNode(_position));
+}
+
+function trkptNode(position){	
+	var tmpStr;
+	var coordStr = `lat= "${position.coords.latitude.toFixed(6) }" lon= " ${position.coords.longitude.toFixed(6)}"`;
+	tmpStr = "<trkpt " + coordStr + ">";
+	tmpStr += "<ele>" + position.coords.altitude.toFixed(1) + "</ele>";
+	tmpStr += "<time>" + gpxFormattedDate(position.timestamp) + "</time>";
+	tmpStr += "</trkpt>";
+    return tmpStr;  
+}
+
+function wptNode(position) {
+	var tmpStr;
+	var coordStr = `lat= "${position.coords.latitude.toFixed(6)}" lon= " ${position.coords.longitude.toFixed(6)}"`;
+	tmpStr = "<wpt " + coordStr + ">";
+	tmpStr += "<ele>" + position.coords.altitude.toFixed(1) + "</ele>";
+	tmpStr += "<time>" + gpxFormattedDate(position.timestamp) + "</time>";
+	tmpStr += "\n<name>" + formattedTime(position.timestamp) + "</name>";	
+	tmpStr += "</wpt>";
+    return tmpStr;  
+
+}
+
+function build_gpx_0 () {
+	var creatorStr = "Carto_tools " + version + subV;
+	var gpxString = "";
+	gpxString += '<gpx xmlns="http://www.topografix.com/GPX/1/1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd" version="1.1"';
+	gpxString += ' creator= "' + creatorStr + '">';
+	
+	gpxString += "\n<trk>\n";	
+//	gpxString += "<name>" + Name + "</name>\n";		
+	gpxString += "<trkseg>\n";
+	
+/*	for(var j = 0; j < circuitRoutes.length; j++){  
+		for(var i = 0; i < circuitRoutes[j].length; i++){  
+			gpxString += trkptNode(circuitRoutes[j][i])+'\n';
+		}
+	}
+*/
+	gpxString += "</trkseg>\n";
+	gpxString += "</trk></gpx>";	
+	return gpxString;
+}
+
+function build_gpx() {
+	var gpxString = "";
+	gpxString = gpxHead();
+	for(var i = 0; i < wptNodes.length; i++){  
+		gpxString+=wptNodes[i] + '\n';
+	}
+	if (trkptNodes.length > 0) {
+		gpxString += trkHead(fileNameToSave);
+			for(var i = 0; i < trkptNodes.length; i++){  
+			gpxString+=trkptNodes[i] + '\n';
+			}
+		gpxString += trkEnd;
+	}			
+	gpxString += gpxEnd;
+	return gpxString;
+}
+
+function gpxHead () {
+	var creatorStr = "Carto_tools " + version + subV;
+	var gpxString = "";
+	gpxString += '<gpx xmlns="http://www.topografix.com/GPX/1/1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd" version="1.1"';
+	gpxString += ' creator= "' + creatorStr + '">\n';
+	return gpxString;	
+}
+
+function trkHead(trkName) {
+	var gpxString = "\n<trk>\n";	
+	gpxString += "<name>" + trkName + "</name>\n";		
+	gpxString += "<trkseg>\n";
+	return gpxString;	
+} 
+
+const trkEnd = "</trkseg>\n</trk>";
+const gpxEnd = "\n</gpx>\n";
+
+function writeFile (strToWrite, _fileName) {
+	var textToSaveAsBlob = new Blob([strToWrite], {type:"text/plain"});
+	var textToSaveAsURL = window.URL.createObjectURL(textToSaveAsBlob);
+	var downloadLink = document.createElement("a");
+	downloadLink.download = _fileName;
+	downloadLink.innerHTML = "Download File";
+	downloadLink.href = textToSaveAsURL;
+	downloadLink.onclick = destroyClickedElement;
+	downloadLink.style.display = "none";
+	document.body.appendChild(downloadLink);
+ 
+ //comment next line to avoid create gpx file and to see the console.log
+	downloadLink.click();
+
+	function destroyClickedElement(event){
+		document.body.removeChild(event.target);
+	}
+}
+
+function saveGpx() {
+	var gpxStr = build_gpx();
+	console.log(gpxStr, fileNameToSave);
+	writeFile(gpxStr, fileNameToSave);
+//	info_status.style.backgroundColor = "Aqua";
+//	info_status.innerHTML = "--- fichier <i>circuit.gpx</i> enregistré --- ";
+//	info_dist.innerHTML = "";
+//	info_ascent.innerHTML = "";
+}
+
+
+
 
 // endregion
 
 
 b_test.onclick = test;
 function test() {
-//console.log(calques[calqueIndex].layerJson.features);
-geoFindMe();
+console.log(wptNodes);
+//geoFindMe();
+//saveData();
 }
 
 var statusTxt =	document.getElementById("statusTxt");
@@ -1521,6 +1689,19 @@ function show_overlayVis() {
 	document.getElementById("statusTxt").innerHTML = str;
 }
 
+function formattedTime1(date) {
+	 // Hours part from the timestamp
+	var hours = date.getHours();
+	// Minutes part from the timestamp
+	var minutes = "0" + date.getMinutes();
+	// Seconds part from the timestamp
+	var seconds = "0" + date.getSeconds();
+	// Will display time in 10:30:23 format
+	var formattedTimeStr = hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
+	console.log(date_format(date,'H:i:s')); // 12:00:54
+	return formattedTimeStr;
+}
+ 
 */
 
 // endregion
