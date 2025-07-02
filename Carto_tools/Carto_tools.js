@@ -1,5 +1,5 @@
 ///
-const version ="0.5.1";
+const version ="0.5.2";
 const subV = "";
 // 0.1.1 : lecture gpx ou json
 // 0.2.1 : essai responsive design
@@ -9,7 +9,8 @@ const subV = "";
 // 0.3.3 : Waymarked Trails
 // 0.4.0 : gestion calques ok
 // 0.4.1 : tableau de features
-// 0.5.0 : localisation (début)
+// 0.5.1 : localisation ok
+// 0.5.2 : rge alti 2 (HR, encore des trous mais progresse)
 
 window.onload = (event) => {
 	b_version.innerHTML = 'V: ' + version + subV; 
@@ -53,8 +54,13 @@ var OSMLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
 	});
 	
 // region RGE alti
-	var RGEaltiLayer = L.tileLayer(
-	'https://data.geopf.fr/wmts?service=WMTS&format=image/png&version=1.0.0&request=GetTile&style=normal&tilematrixset=PM&tilematrix={z}&tilerow={y}&tilecol={x}&layer=IGNF_ELEVATION.ELEVATIONGRIDCOVERAGE.SHADOW', { 
+
+const RGEalti_url_1 = 'https://data.geopf.fr/wmts?service=WMTS&format=image/png&version=1.0.0&request=GetTile&style=normal&tilematrixset=PM&tilematrix={z}&tilerow={y}&tilecol={x}&layer=IGNF_ELEVATION.ELEVATIONGRIDCOVERAGE.SHADOW';
+
+const RGEalti_url_2 = 'https://data.geopf.fr/wmts?service=WMTS&format=image/png&version=1.0.0&request=GetTile&style=normal&tilematrixset=PM&tilematrix={z}&tilerow={y}&tilecol={x}&layer=IGNF_LIDAR-HD_MNT_ELEVATION.ELEVATIONGRIDCOVERAGE.SHADOW';
+
+	var RGEaltiLayer = L.tileLayer(RGEalti_url_2,
+	{ 
 
 ////IGNF_ELEVATION  -> IGNF_LIDAR-HD_MNT_ELEVATION
 
@@ -63,18 +69,23 @@ var OSMLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
 		attribution: '<a href="https://geoservices.ign.fr/" target="_blank">IGN RGE alti</a>'
 	});
 
+// endregion
 // region Stava
 
 var url_strava1 = 'https://proxy.nakarte.me/https/heatmap-external-b.strava.com/tiles-auth/run/purple/{z}/{x}/{y}.png';
 
 var url_strava2 = 'https://strava-heatmap.tiles.freemap.sk/run/purple/{z}/{x}/{y}.png';
 
-var url_strava3 = 'https://heatmap-external-a.strava.com/tiles-auth/run/purple/{z}/{x}/{y}.png?Key-Pair-Id=APKAIDPUN4QMG7VUQPSA&Policy=eyJTdGF0ZW1lbnQiOiBbeyJSZXNvdXJjZSI6Imh0dHBzOi8vaGVhdG1hcC1leHRlcm5hbC0qLnN0cmF2YS5jb20vKiIsIkNvbmRpdGlvbiI6eyJEYXRlTGVzc1RoYW4iOnsiQVdTOkVwb2NoVGltZSI6MTczNjc4MDc2Mn0sIkRhdGVHcmVhdGVyVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNzM1NTU2NzYyfX19XX0_&Signature=cnbRKnURivt-1m8zfEChfy4tkMlNXm8jygO5a9FyKP40Y-TQGZzqdhPpl6sKgGMRr-59Lwjt3vMnM-9JdxXbLC1Hp~dd8IYUeOfGZBxTxbUm6Os0YyMUZBW7Z-ZG~H0zCcCRlhAL3vsc7StrRI8oCFxBbY4A~BgOWTAivLDHnYofcUr66DqTMAZyObhrewEyj1BkUyq96gNYDc7fDIPKaIf19nugtUY3k69BoJ03x0juUqjnbk~F2OVurOBulnYc2w15jGNlLqZwuhJ2v4ABmRZbJtOnE~vFLoYpwfC212eT0-zem95xyPRwk8jN00x7SaBrXmN90IBaGRvJm-Ak9w__';
+var url_strava3old = 'https://heatmap-external-a.strava.com/tiles-auth/run/purple/{z}/{x}/{y}.png?Key-Pair-Id=APKAIDPUN4QMG7VUQPSA&Policy=eyJTdGF0ZW1lbnQiOiBbeyJSZXNvdXJjZSI6Imh0dHBzOi8vaGVhdG1hcC1leHRlcm5hbC0qLnN0cmF2YS5jb20vKiIsIkNvbmRpdGlvbiI6eyJEYXRlTGVzc1RoYW4iOnsiQVdTOkVwb2NoVGltZSI6MTczNjc4MDc2Mn0sIkRhdGVHcmVhdGVyVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNzM1NTU2NzYyfX19XX0_&Signature=cnbRKnURivt-1m8zfEChfy4tkMlNXm8jygO5a9FyKP40Y-TQGZzqdhPpl6sKgGMRr-59Lwjt3vMnM-9JdxXbLC1Hp~dd8IYUeOfGZBxTxbUm6Os0YyMUZBW7Z-ZG~H0zCcCRlhAL3vsc7StrRI8oCFxBbY4A~BgOWTAivLDHnYofcUr66DqTMAZyObhrewEyj1BkUyq96gNYDc7fDIPKaIf19nugtUY3k69BoJ03x0juUqjnbk~F2OVurOBulnYc2w15jGNlLqZwuhJ2v4ABmRZbJtOnE~vFLoYpwfC212eT0-zem95xyPRwk8jN00x7SaBrXmN90IBaGRvJm-Ak9w__';
 
-	var StavaLayer = L.tileLayer(	url_strava2,{
-		maxNativeZoom:15,
+var url_strava3 = 'https://heatmap-external-a.strava.com/tiles-auth/all/purple/{z}/{x}/{y}.png?Key-Pair-Id=K3VK9UFQYD04PI&Policy=eyJTdGF0ZW1lbnQiOiBbeyJSZXNvdXJjZSI6Imh0dHBzOi8vKmNvbnRlbnQtKi5zdHJhdmEuY29tL2lkZW50aWZpZWQvKiIsIkNvbmRpdGlvbiI6eyJEYXRlTGVzc1RoYW4iOnsiQVdTOkVwb2NoVGltZSI6MTc0Mzk3Njc1OX19fV19&Signature=H-MKinYCo6~PwEZ48p~l88hdGLQvhrh3Fx6w3YKGcspWjTnItOQfeT7vq~KM-hrWC18Kt-VOn3hEWC6dKMFqftSRtzoJ4Mv9rjT89VKlp1GH7g6YJT4pq2oySA8ay9u6pCC7GCBjZoj44d0YZcgJjLoJ3MkNJ8eKUqZ~12sa4yCVTR6Tno6auHGQ0qBMYrzkUI7MyHJLov5NYcZNXtNNLUBevGamRBBxiJV7vBtKPon8jiSNbIWicMwVkUsbUTmoibd9QltQgiA0A20qwN~qtr5Vw00FjRHCyqRQ49kz8P3CbOfcNRSEkZoDlQxgvPr4ceeloDQNohN~KAU98WlJew__';
+
+var url_strava4 = 'https://content-a.strava.com/anon/globalheat/all/purple/{z}/{x}/{y}.png';
+
+	var StavaLayer = L.tileLayer(	url_strava4,{
+		maxNativeZoom:11,
  		maxZoom: 19,
-		minZoom: 13,
+		minZoom: 11,
 		attribution: '| <a href="https://www.strava.com/" target="_blank">Stava</a>'
 	});
 // endregion
