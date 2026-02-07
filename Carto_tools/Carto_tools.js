@@ -1,6 +1,6 @@
 ///
-const version ="0.5.2";
-const subV = "";
+const version ="0.5.6";
+const subV = "_b";
 // 0.1.1 : lecture gpx ou json
 // 0.2.1 : essai responsive design
 // 0.3.0 : objets calques 
@@ -11,6 +11,11 @@ const subV = "";
 // 0.4.1 : tableau de features
 // 0.5.1 : localisation ok
 // 0.5.2 : rge alti 2 (HR, encore des trous mais progresse)
+// 0.5.3 : changé div coordonnées
+// 0.5.4 : insérer point localisé ok
+// 0.5.4_X : essais pour panoramax ok
+// 0.5.5 : essai de distance entre deux points -> ok
+// 0.5.6 : 5.4.X + 5.5
 
 window.onload = (event) => {
 	b_version.innerHTML = 'V: ' + version + subV; 
@@ -70,6 +75,9 @@ const RGEalti_url_2 = 'https://data.geopf.fr/wmts?service=WMTS&format=image/png&
 	});
 
 // endregion
+
+
+
 // region Stava
 
 var url_strava1 = 'https://proxy.nakarte.me/https/heatmap-external-b.strava.com/tiles-auth/run/purple/{z}/{x}/{y}.png';
@@ -105,7 +113,24 @@ var url_strava4 = 'https://content-a.strava.com/anon/globalheat/all/purple/{z}/{
 		attribution: '| <a href="https://www.waymarkedtrails.org/" target="_blank">Waymarked Trails</a>'
 	});
 
+
+// region panoramax
+
+/*	var PanoramaxLayer = L.tileLayer(' https://api.panoramax.xyz/api/map/{z}/{x}/{y}.mvt', {
+		maxZoom: 19,
+		attribution: '| Tracés: <a href="https://www.openstreetmap.org" target="_blank">OpenStreetMap</a>'
+	});	*/
+	
+	/* https://forum.geocommuns.fr/t/panoramax-sous-osmand-en-attendant-mieux/2465/8 */
+	
+	var PanoramaxLayer = L.tileLayer('https://gis.cartocite.fr/cgi-bin/qgis_mapserv.fcgi?MAP=/home/qgis/projects/Panoramax.qgz&SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=Panoramax_vertor_tiles_styled&STYLE=default&FORMAT=image%2Fpng&TILEMATRIXSET=EPSG%3A3857&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}', {
+		minZoom:13,
+		maxZoom: 20,
+		attribution: '| Tracés: <a href="https://www.openstreetmap.org" target="_blank">OpenStreetMap</a>'
+	});
+
 // endregion
+
 	
 // region Calques
 
@@ -312,7 +337,8 @@ var baseMaps = {
 var overlayMaps = {
 	"BD_Topo": BD_TopoLayer,
 	"Stava": StavaLayer,
-	"Waymarked_Trails": WMTLayer
+	"Waymarked_Trails": WMTLayer,
+	"Panoramax": PanoramaxLayer
 };
 overlayMaps[calque1.name] = calque1.layer;
 overlayMaps[calque2.name] = calque2.layer;
@@ -335,6 +361,8 @@ map.on("movestart", function () {
 	map.removeLayer(StavaLayer);
 	map.removeLayer(BD_TopoLayer);
 	map.removeLayer(WMTLayer);
+	map.removeLayer(PanoramaxLayer);
+
 }); 
 
 map.on("moveend", function () {
@@ -383,7 +411,7 @@ map.on("click", function(e){
 		curPt_latlng = e.latlng;
 //		console.log(curPt_latlng);
 		curPtMark.setLatLng(curPt_latlng);
-		if (coordsMode) { updateCoords();} 
+		if (coordsMode) { update3DCoords();} 
 	}
 });
 
@@ -548,8 +576,10 @@ b_coords.onclick = ()=> {
 
 b_centerPoint.onclick = ()=> {
 	map.setView(curPt_latlng);
+}
 
-
+b_center.onclick = ()=> {
+	map.setView(curPt_latlng);
 }
 
 b_osmExplore.onclick = ()=>{
@@ -586,11 +616,17 @@ b_save_gpx.onclick = ()=> {
 // region point courant
 
 var curPt_latlng = L.latLng(map.getCenter());
-//var curPt_latlng = L.latLng([0,0]);
+var curPt1_latlng = L.latLng([0,0]);
+var curPt2_latlng = L.latLng([0,0]);
 var curPtDiv = document.getElementById('curPtDiv');
 var curPtHeader = document.getElementById('curPtHeader');
-var coordSpan = document.getElementById('coordSpan');
 var curPtElev = document.getElementById('curPtElev');
+var cb_LatLng = document.getElementById('cb_LatLng');
+
+cb_LatLng.addEventListener('change', (event) => {
+	update3DCoords();
+});
+
 
 var coordsMode = false;
 
@@ -601,7 +637,7 @@ bCloseCurPt.onclick = ()=> {
 function show_hideCoords(vis){
 	if(vis) {
 		curPtDiv.style.display = "block";			
-		updateCoords();
+		update3DCoords();
 		b_coords.innerHTML = "Coordonnées -x-";
 		osmMode = "none";
 		show_hideOsm();
@@ -625,11 +661,47 @@ var curPtMark = new L.CircleMarker(curPt_latlng,
 ).addTo(map);
 var curPtMov = moveableMarker(map, curPtMark)	//même marker mais déplaçable
 
-function updateCoords(){ 
-	var latLngStr = curPt_latlng.lng.toFixed(5)+ ', ' + curPt_latlng.lat.toFixed(5);
-//	curPtLonLat.value = latLngStr;
-	coordSpan.innerHTML = latLngStr;
-	getPointElev(latLngStr);
+var curPt1Mark = new L.CircleMarker(curPt1_latlng,
+	{
+		radius: 4,
+		fillColor: "red",
+		fillOpacity: 0.6,
+		color: "black",
+		weight: 1					
+	}
+).addTo(map);
+var curPtMov1 = moveableMarker(map, curPt1Mark)	//même marker mais déplaçable
+
+var curPt2Mark = new L.CircleMarker(curPt2_latlng,
+	{
+		radius: 4,
+		fillColor: "blue",
+		fillOpacity: 0.6,
+		color: "black",
+		weight: 1					
+	}
+).addTo(map);
+var curPtMov2 = moveableMarker(map, curPt2Mark)	//même marker mais déplaçable
+
+function coordsStr() {
+	var latLngStr;
+///	console.log(cb_LatLng.checked);
+	if (cb_LatLng.checked) {
+		latLngStr = curPt_latlng.lat.toFixed(5)+ ', ' + curPt_latlng.lng.toFixed(5);
+	} else {
+		latLngStr = curPt_latlng.lng.toFixed(5)+ ', ' + curPt_latlng.lat.toFixed(5);
+	}
+	return latLngStr;
+}
+
+function update3DCoords(){
+	updateLonLat();
+	getPointElev(coordsStr());
+}
+
+function updateLonLat() {
+	editLonLat.value = coordsStr();
+
 }
 
 curPtHeader.onmouseover = dragcurPtDiv;
@@ -638,32 +710,105 @@ function dragcurPtDiv(){
 }
 
 b_copyCoords.onclick = copyCoords;	
-function copyCoords() {
-	//alert("xxx");
-//	navigator.clipboard.writeText(curPtLonLat.value)
-	navigator.clipboard.writeText(coordSpan.innerHTML)
+b_copy1.onclick = copyCoords;	
+b_copy2.onclick = copyCoords;	
+function copyCoords(event) {
+	var strTmp, strSplit;
+		strTmp = editLonLat.value;
+	if (event.target.id == "b_copyCoords") {
+	} else {
+		strSplit = strTmp.split(',');
+		if (event.target.id == "b_copy1") {
+			strTmp = strSplit[0].trim();
+		} else {
+			strTmp = strSplit[1].trim();
+		}
+	}
+		
+	navigator.clipboard.writeText(strTmp)
 }
 
-b_editCoords.onclick = ()=> {
-	b_editCoords.style.display = "none";
-	coordSpan.style.display = "none";
-	editCoordsDiv.style.display = "block";
+b_paste.onclick = a_pasteCoords;
+async function a_pasteCoords() {
+    const text = await navigator.clipboard.readText()
+	editLonLat.value = text;
+	setEdit();
+}
+
+function pasteCoords() {
+ // document.querySelector('editLonLat').focus();
+ editLonLat.focus();
+  const result = document.execCommand('paste')
+  console.log('document.execCommand result: ', result);
+}
+
+editLonLat.onchange = setEdit;
+function setEdit() {
+	b_editCancel.style.display = "inline";
+	b_editOk.style.display = "inline";
+	console.log(editLonLat.value);
+}
+
+editLonLat.addEventListener('keypress', function(event) {
+ // Vérifiez si la touche pressée est Entrée
+ if (event.keyCode === 13) {
+     // Appeler votre fonction de validation ici
+     validInput(true);
+ }
+});
+
+function validInput(isOk) {
+	if (isOk) {
+		decodeEdit(editLonLat.value, 0);
+	}else {
+		update3DCoords(); //restore previous value	
+	}
+	b_editOk.style.display = "none";
+	b_editCancel.style.display = "none";	
 }
 
 b_editOk.onclick = ()=> {
-	decodeEdit(curPtLonLat.value);
-	b_editCoords.style.display = "inline";
-	coordSpan.style.display = "block";
-	editCoordsDiv.style.display = "none";
+	validInput(true);
 }
 
-function decodeEdit(lonLatStr) {
+b_editCancel.onclick = ()=> {
+	validInput(false);
+}
+
+function decodeEdit(lonLatStr, _num) {
+/*	lonLatSplit = lonLatStr.split(',');
+	if (cb_LatLng.checked) {
+		ptLatlng = L.latLng(lonLatSplit[0], lonLatSplit[1]);
+	} else {
+		ptLatlng = L.latLng(lonLatSplit[1], lonLatSplit[0]);
+	}*/
+	var _ptLatlng = ptLatlng(lonLatStr);
+	switch(_num) {
+		case 0:
+			curPt_latlng = _ptLatlng;
+			curPtMark.setLatLng(curPt_latlng);
+			update3DCoords();
+		break;
+		case 1:
+			curPt1_latlng = _ptLatlng;
+			curPt1Mark.setLatLng(curPt1_latlng);
+		break;
+		case 2:
+			curPt2_latlng = _ptLatlng;
+			curPt2Mark.setLatLng(curPt2_latlng);
+		break;
+	}
+	console.log(_num, curPt_latlng);
+}
+function ptLatlng(lonLatStr) {
+	var _ptLatlng;
 	lonLatSplit = lonLatStr.split(',');
-	ptLatlng = L.latLng(lonLatSplit[1], lonLatSplit[0]);
-	curPt_latlng = ptLatlng;
-	curPtMark.setLatLng(curPt_latlng);
-	updateCoords();
-	console.log(ptLatlng);
+	if (cb_LatLng.checked) {
+		_ptLatlng = L.latLng(lonLatSplit[0], lonLatSplit[1]);
+	} else {
+		_ptLatlng = L.latLng(lonLatSplit[1], lonLatSplit[0]);
+	}
+ return _ptLatlng;
 }
 	
 // region elev
@@ -673,12 +818,17 @@ const
   URLbase = 'https://data.geopf.fr/altimetrie/1.0/calcul/alti/rest/elevation.json?resource=ign_rge_alti_wld&';
 	
 function getPointElev(_coordStr) {
-var lonStr, latStr, lonPrm, latPrm, URLFull, responseStr;
+var lonPrm, latPrm, URLFull, responseStr;
 var elevStr = '???';
 var	ptStrs ;
 	ptStrs = _coordStr.split(',');
-	lonPrm = 'lon=' + ptStrs[0].trim();
-	latPrm = 'lat=' + ptStrs[1].trim();
+	if (cb_LatLng.checked) {
+		lonPrm = 'lon=' + ptStrs[1].trim();
+		latPrm = 'lat=' + ptStrs[0].trim();
+	} else {
+		lonPrm = 'lon=' + ptStrs[0].trim();
+		latPrm = 'lat=' + ptStrs[1].trim();
+	}
 	URLFull = URLbase + lonPrm + '&' +latPrm + '&zonly=true';  
 ///	URLFull = URLbase + lonPrm + '&' +latPrm ;  
 	curPtElev.style.backgroundColor = "Red";
@@ -696,6 +846,112 @@ var	ptStrs ;
 
 // endregion
 	
+// endregion
+
+// region distance
+var distDiv = document.getElementById('distDiv');
+var distHeader = document.getElementById('distHeader');
+var distSpan = document.getElementById('distSpan');
+
+var distMode = false;
+
+b_dist.onclick  = ()=> {
+	show_hideDist(true);
+}
+bCloseDist.onclick = ()=> {
+	show_hideDist(false);
+}
+
+function show_hideDist(vis){
+	if(vis) {
+		distDiv.style.display = "block";			
+	}
+	else {
+		distDiv.style.display = "none";			
+	}
+	distMode = vis;
+}
+
+distDiv.onmouseover = dragdistDiv;
+function dragdistDiv(){
+	dragElement(distHeader, distDiv );
+}
+
+b_cur1.onclick = copyCurrent;
+b_cur2.onclick = copyCurrent;
+function copyCurrent(ev) {
+	switch (ev.target.id) {
+		case "b_cur1":
+			curPt1_latlng = curPt_latlng;
+			editPt1.value = coordsStr();
+			curPt1Mark.setLatLng(curPt1_latlng);
+		break;
+		case "b_cur2":
+			curPt2_latlng = curPt_latlng;
+			editPt2.value = coordsStr();
+			curPt2Mark.setLatLng(curPt2_latlng);
+		break;	
+	}
+}
+
+b_paste1.onclick = a_paste;
+b_paste2.onclick = a_paste;
+async function a_paste(ev) {
+	
+console.log(ev.target.id);
+	var ptNum = 1;
+ 	if (ev.target.id == "b_paste2") {ptNum = 2};
+   const text = await navigator.clipboard.readText()
+//	editPt1.value = text;
+	setEdit_num(ptNum, text);
+}
+
+function pasteCoords() {
+ // document.querySelector('editLonLat').focus();
+ editPt1.focus();
+  const result = document.execCommand('paste')
+  console.log('document.execCommand result: ', result);
+}
+
+editPt1.onchange = setEdit_num;
+function setEdit_num(_num, _text) {
+	switch (_num) {
+		case 1: 
+			editPt1.value = _text;
+			break;
+		case 2 :
+			editPt2.value = _text;
+			break;
+	}
+	decodeEdit(_text,_num)
+//	b_editCancel.style.display = "inline";
+//	b_editOk.style.display = "inline";
+//	console.log(_num, _text);
+}
+
+b_calc.onclick = calcDist;
+function calcDist() {
+	var _dist = distSphere(curPt1_latlng, curPt2_latlng);
+	distSpan.innerText = _dist.toFixed(3);
+}
+
+	function distSphere(pt1, pt2) { // units metre
+		function _deg2rad (deg) { return deg * Math.PI / 180; }
+		var R = 6371000;
+		var dLat = _deg2rad(pt2.lat - pt1.lat);
+		var dLon = _deg2rad(pt2.lng - pt1.lng);
+		var r = Math.sin(dLat/2) *
+		  Math.sin(dLat/2) +
+		  Math.cos(_deg2rad(pt1.lat)) *
+		  Math.cos(_deg2rad(pt2.lat)) *
+		  Math.sin(dLon/2) *
+		  Math.sin(dLon/2);
+		var c = 2 * Math.atan2(Math.sqrt(r), Math.sqrt(1-r));
+		var d = R * c;
+		return d;
+	  }
+
+
 // endregion
 
 // region statusDiv
