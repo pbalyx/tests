@@ -104,7 +104,7 @@
 		background-color: white;
 		min-width: 140px;
 	/*	box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);*/
-		z-index: 1;
+		z-index: 900;
 	}
 			
 	.d_sub button, label {
@@ -269,6 +269,22 @@
 
 }
 */
+
+	#photoDiv {
+		position: absolute; 
+		display: none; 
+		width: 30%;
+		height: auto;
+		left: 10px;
+		top: 30%;
+		background-color: white;
+		border: 1px solid blue;
+/*		z-index: 900; */
+		resize: both;
+		overflow: hidden;
+    }
+		
+
 	</style>
 
 </head>
@@ -296,7 +312,8 @@
 					<button id="b_undo" class= "b_submenu" >Annuler</button>
 					<button id="b_center_file" class= "b_submenu" >Centrer sur calque</button>
 					<button id="b_close_file" class= "b_submenu" >Vider</button>
-					<button id="b_save_file" class= "b_submenu" style="display:none"  >Enregistrer</button>
+					<button id="b_save" class= "b_submenu" style="display:none"  >Enregistrer</button>
+					<button id="b_test" class= "b_submenu" >Test</button>
 				</div>
 			</div>
 			
@@ -307,13 +324,16 @@
 						<button id="b_coords" class= "b_submenu" >Coordonnées</button>
 <!--						<button id="b_dist" class= "b_submenu" >Distance</button> -->
 						<button id="b_centerPoint" class= "b_submenu" >Centrer</button>
-						<button id="b_test" class= "b_submenu" >Test</button>
+						<button id="b_dist" class= "b_submenu" >distance</button>
 					</div>
 			</div>		
 			<div id= "d_dist" class= "d_menu">
-				<button id="b_tools" class= "b_menu">Distance</button>				
+				<button class= "b_menu">Panoramax</button>				
 					<div id="dSub_dist" class= "d_sub" >
-						<button id="b_dist" class= "b_submenu" >distance</button>
+					<button id="b_pxImportAround" class= "b_submenu" >Chercher autour</button>
+					<button id="b_pxImportBox" class= "b_submenu" >Chercher carte</button>
+					<button id="b_center_panox" class= "b_submenu" >Centrer</button>
+					<button id="b_panoxClear" class= "b_submenu" >Vider</button>
 					</div>
 			</div>		
 
@@ -461,9 +481,21 @@
 		</div>		
 	</div>
 	
+	<div id="photoDiv">		
+		<div id= "photoHeader" class= "header">
+			Photo&nbsp 
+				<span id="photoName"></span>
+			<button id= "bPrevPoint" class= "bPrevNextPoint"  disabled><b>&lt</b></button>
+			<button id= "bNextPoint" class= "bPrevNextPoint"  disabled><b>&gt</b></button>	
+			<button id="bClosePhoto" class = "b_close">X</button>
+		</div>
+		<img  id="image" alt="pas de photo ?" style="max-width:100%">
+	</div>
+	
 
 	
 	<script src='osmtogeojson.js'></script> 
+	<script src="panox.js"> </script>
 	<script src="Carto_tools.js"> </script>
 
 </body>

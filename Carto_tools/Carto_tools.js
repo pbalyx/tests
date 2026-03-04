@@ -1,6 +1,6 @@
 ///
-const version ="0.5.6";
-const subV = "_b";
+const version ="0.5.8";
+const subV = ""; 
 // 0.1.1 : lecture gpx ou json
 // 0.2.1 : essai responsive design
 // 0.3.0 : objets calques 
@@ -13,14 +13,19 @@ const subV = "_b";
 // 0.5.2 : rge alti 2 (HR, encore des trous mais progresse)
 // 0.5.3 : changé div coordonnées
 // 0.5.4 : insérer point localisé ok
-// 0.5.4_X : essais pour panoramax ok
+// 0.5.4_X : essais pour panoramax (tuiles) ok mais après ne marche plus
 // 0.5.5 : essai de distance entre deux points -> ok
 // 0.5.6 : 5.4.X + 5.5
+// 0.5.7 : essai pour voir les photos panoramax
+//		_b : ok à nettoyer
+// 0.5.8 : supprimé panoramax de stephaneP calque Panox en cours
+
+// osmtogeojson :  https://github.com/tyrasd/osmtogeojson
 
 window.onload = (event) => {
 	b_version.innerHTML = 'V: ' + version + subV; 
 	document.title = 'Carto_tools  V_' + version + subV;
-	console.log("version : ", version);
+	console.log("version : ", version + subV);
 	init_map();
 	init_features_table();
 };
@@ -35,7 +40,7 @@ function init_map() {
 //region OTM
 	var OTMLayer = L.tileLayer('https://a.tile.opentopomap.org/{z}/{x}/{y}.png', {
 		maxNativeZoom:15,
-		maxZoom: 17,
+		maxZoom: 18,
 		attribution: '&copy  <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> | <a href="https://www.opentopomap.org/ target="_blank"">OpenTopoMap</a>'
 	}); 
 
@@ -48,13 +53,15 @@ var OSMLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
 
 // region PlanIGN
 	var PlanIGNLayer = L.tileLayer('https://data.geopf.fr/wmts/?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2&STYLE=normal&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&FORMAT=image%2Fpng', {
-		maxZoom: 19,
+		maxNativeZoom:19,
+		maxZoom: 20,
 		attribution: ' Carte: <a href="https://geoservices.ign.fr/planign" target="_blank">Plan IGN</a> | Tracés: <a href="https://www.openstreetmap.org" target="_blank">OpenStreetMap</a>'
 	});
 
 // region IGNPhoto
 	var IGNPhotoLayer = L.tileLayer('https://data.geopf.fr/wmts/?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=ORTHOIMAGERY.ORTHOPHOTOS&STYLE=normal&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&FORMAT=image%2Fjpeg', {
-		maxZoom: 19,
+		maxNativeZoom:19,
+		maxZoom: 20,
 		attribution: '<a href="https://geoservices.ign.fr/" target="_blank">IGN Image aérienne</a> | Tracés: <a href="https://www.openstreetmap.org" target="_blank">OpenStreetMap</a>'
 	});
 	
@@ -66,17 +73,10 @@ const RGEalti_url_2 = 'https://data.geopf.fr/wmts?service=WMTS&format=image/png&
 
 	var RGEaltiLayer = L.tileLayer(RGEalti_url_2,
 	{ 
-
-////IGNF_ELEVATION  -> IGNF_LIDAR-HD_MNT_ELEVATION
-
 		maxNativeZoom:17,
- 		maxZoom: 19,
+ 		maxZoom: 20,
 		attribution: '<a href="https://geoservices.ign.fr/" target="_blank">IGN RGE alti</a>'
 	});
-
-// endregion
-
-
 
 // region Stava
 
@@ -104,6 +104,7 @@ var url_strava4 = 'https://content-a.strava.com/anon/globalheat/all/purple/{z}/{
 		maxZoom: 19,
 		attribution: '| <a href="https://geoservices.ign.fr/" target="_blank">IGN BD Topo</a>'
 	});
+// endregion
 
 // region Waymarkedtrail
 //https://tile.waymarkedtrails.org/hiking/14/8388/5930.png en direct marche
@@ -113,25 +114,8 @@ var url_strava4 = 'https://content-a.strava.com/anon/globalheat/all/purple/{z}/{
 		attribution: '| <a href="https://www.waymarkedtrails.org/" target="_blank">Waymarked Trails</a>'
 	});
 
-
-// region panoramax
-
-/*	var PanoramaxLayer = L.tileLayer(' https://api.panoramax.xyz/api/map/{z}/{x}/{y}.mvt', {
-		maxZoom: 19,
-		attribution: '| Tracés: <a href="https://www.openstreetmap.org" target="_blank">OpenStreetMap</a>'
-	});	*/
-	
-	/* https://forum.geocommuns.fr/t/panoramax-sous-osmand-en-attendant-mieux/2465/8 */
-	
-	var PanoramaxLayer = L.tileLayer('https://gis.cartocite.fr/cgi-bin/qgis_mapserv.fcgi?MAP=/home/qgis/projects/Panoramax.qgz&SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=Panoramax_vertor_tiles_styled&STYLE=default&FORMAT=image%2Fpng&TILEMATRIXSET=EPSG%3A3857&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}', {
-		minZoom:13,
-		maxZoom: 20,
-		attribution: '| Tracés: <a href="https://www.openstreetmap.org" target="_blank">OpenStreetMap</a>'
-	});
-
 // endregion
 
-	
 // region Calques
 
 function layer_onEachFeatureDo(feature, layer) {
@@ -160,8 +144,25 @@ function layer_onEachFeatureDo(feature, layer) {
 			popupStr += '<br /> desc: '+ feature.properties.desc ;
 		}
 	}
+		layer.on('click', onCalqueClick);
+
 	layer.bindPopup(popupStr);
+///	layer.unbindPopup();
 }
+
+function onCalqueClick(e) {
+	if (osmMode != "panox") {
+///		e.target.bindPopup();
+	} else { 	
+		e.target.unbindPopup();
+		pointclicked(e);
+	}
+}
+
+async function pointclicked(e) {
+	manageItem(e.target.feature, true);
+}
+
 
 var defaultStyle = {
 	color: "green",
@@ -174,9 +175,11 @@ var defaultStyle = {
 };
 
 const style1 = {"color": "red",	"fillColor": "Yellow"};
-const style2 = {"color": "Blue",	"fillColor": "LightBlue"};
+const style2 = {"color": "Blue",	"fillColor": "LightBlue",  "radius":"5"};
 const style3 = {"color": "Maroon",	"fillColor": "green"};
 const styles = [style1, style2, style3];
+
+const styleSelected = {"color": "Blue",	"fillColor": "Yellow", "radius":"8"};
 
 function isPresentBad(_feature, _featuresList) {
 	var _isPresent = false;
@@ -188,7 +191,6 @@ function isPresentBad(_feature, _featuresList) {
 		}	
 	return _isPresent;
 }
-
 
 function isPresent(_feature, _featuresList) {
 	var _isPresent = false;
@@ -290,18 +292,22 @@ function CalqueObj (_name) {
 	}
 }
 
-function updateCalque(_addedJson) {
-	var calque = calques[calqueIndex];
+function updateCalque(_num, _addedJson) {
+	var calque = calques[_num];
 	var isNew = (calque.layerJson.features.length == 0);
 //console.log(isNew, calque.layerJson.features.length);
+	try {
 	calque.addFeatures(_addedJson);
 	if (isNew) {
 		map.addLayer(calque.layer);
 	}
-	calque.setStyle(styles[calqueIndex]); //must be done each time (?)
-	overlaysVis_remove(calque.name);
+	calque.setStyle(styles[_num]); //must be done each time (?)
+	overlaysVis_remove(calque.name); 
 	overlaysVis.push(calque.name);
-///		show_overlayVis();
+	}
+	catch (err) {
+		console.log(err);
+	}
 }
 
 
@@ -338,7 +344,6 @@ var overlayMaps = {
 	"BD_Topo": BD_TopoLayer,
 	"Stava": StavaLayer,
 	"Waymarked_Trails": WMTLayer,
-	"Panoramax": PanoramaxLayer
 };
 overlayMaps[calque1.name] = calque1.layer;
 overlayMaps[calque2.name] = calque2.layer;
@@ -361,8 +366,6 @@ map.on("movestart", function () {
 	map.removeLayer(StavaLayer);
 	map.removeLayer(BD_TopoLayer);
 	map.removeLayer(WMTLayer);
-	map.removeLayer(PanoramaxLayer);
-
 }); 
 
 map.on("moveend", function () {
@@ -382,7 +385,6 @@ map.on("moveend", function () {
 		}
 */
 	}
-///	show_overlayVis();
 	map_moving = false;
 });
 
@@ -405,7 +407,6 @@ map.on("overlayadd", e => {
 map.on("click", function(e){
 	if (osmMode == "explore") {
 		osm_latlng = e.latlng;
-////		var latLngStr = osm_latlng.lng.toFixed(5)+ ', ' + osm_latlng.lat.toFixed(5);
 		osmMark.setLatLng(osm_latlng);
 	} else {
 		curPt_latlng = e.latlng;
@@ -460,7 +461,7 @@ function dragElement(header, elem) {
 function moveableMarker(map, marker) {
 
 // drag circleMarker from
-////https://stackoverflow.com/questions/43410600/leaflet-v1-03-make-circlemarker-draggable
+// https://stackoverflow.com/questions/43410600/leaflet-v1-03-make-circlemarker-draggable
 
   function trackCursor(evt) {
     marker.setLatLng(evt.latlng)
@@ -495,7 +496,7 @@ b_layer_3b.onclick = setLayer;
 
 function setLayer(ev) {
 	var b_id = ev.target.id;
-	console.log(b_id);
+//	console.log(b_id);
 	switch (b_id) {
 		case "b_layer_1": 
 		case "b_layer_1b": 
@@ -548,12 +549,20 @@ b_osmImport.onclick =  ()=>{
 	show_hideOsm();
 }
 
+b_pxImportAround.onclick =  ()=>{ 
+	pxImportAround(1000);
+}
+b_pxImportBox.onclick = pxImportBox;
+b_panoxClear.onclick = pxClear;
+
 b_undo.onclick = () => {	
 	calques[calqueIndex].undoLast();
 	calques[calqueIndex].setStyle(styles[calqueIndex]);
 }
 
-b_center_file.onclick = () => {
+b_center_file.onclick = centerCalque;
+b_center_panox.onclick = centerCalque;
+function centerCalque() {
 	var bounds = calques[calqueIndex].layer.getBounds();
 	if (bounds.isValid()) {
 		map.fitBounds(bounds);
@@ -567,6 +576,7 @@ b_close_file.onclick = () => {
 	overlaysVis_remove(calques[calqueIndex].name);
 //console.log(calques[calqueIndex].layer);
 }
+
 
 //------------ tools --------------
 b_coords.onclick = ()=> {
@@ -1079,7 +1089,7 @@ function osmId(_feature) {
 
 // region OSM
 
-var osmMode = "none"; // "none", "import", "explore"
+var osmMode = "none"; // "none", "import", "explore", "panox"
 
 function show_hideOsm(){
 		if(osmMode == "none") {
@@ -1095,7 +1105,6 @@ function show_hideOsm(){
 			osmDiv.style.display = "block";
 			elements_div.style.display = "block";
 			b_osmExplore.innerHTML = "Explorer OSM -x-";
-////			b_request.innerHTML = "Explorer";
 			osm_latlng = curPt_latlng;
 			osmMark.addTo(map);
 			osmMark.setLatLng(osm_latlng);
@@ -1119,13 +1128,14 @@ function show_hideOsm(){
 ///			b_request.innerHTML = "Importer";
 
 			show_hideCoords(false);
-		}
+		} else {alert("osmMode", osmMode);
 	}
+}
 	
 // region Overpass
 
 var baseUrl = 'https://overpass-api.de/api/interpreter';
-var queryType = ""; //// type enum ?? (around, meta, import)
+var queryType = ""; // type enum ?? (around, meta, import)
 var queryOk = true;
 var osmDiv = document.getElementById('osmDiv');
 var osmHeader = document.getElementById('osmHeader');
@@ -1510,13 +1520,7 @@ b_import.onclick = () => {
 	importOsm(subType);
 }
 
-/*
-b_showFeat.onclick = () => {
-		infoVisible = !infoVisible;
-		show_hideInfo(infoVisible);
-	fill_features_table();////
-}
-*/
+
 bCloseImport.onclick = () =>{	
 	osmMode = "none";
 	show_hideOsm();
@@ -1540,7 +1544,8 @@ function display_resultImport(osm_data) {
 		isrefFile = false;
 		geojson_tmp = osmtogeojson(osm_data, {flatProperties:false});		
 		geojson_tmp1 = reformatJson(geojson_tmp);
-		updateCalque(geojson_tmp1);
+		updateCalque(calqueIndex, geojson_tmp1);
+		console.log(geojson_tmp1);
 	}
 	catch(err) {
 ///			trucDiv.innerHTML += err;
@@ -1563,6 +1568,199 @@ function display_resultImport(osm_data) {
 
 // endregion
 
+// region Panoramax
+
+const panoxNum = 0;
+const seqNum = 1;
+var img = document.getElementById("image");
+var currentCollectionId;
+var currentCollectionCount = 0;
+var currentImageIndex = 0;
+var next_apiUrl, prev_apiUrl;
+
+
+bClosePhoto.onclick = hidePhoto;
+	function hidePhoto(){
+		photoDiv.style.display = "none";			
+	}
+	
+photoHeader.onmouseover = dragPhotoDiv;
+function dragPhotoDiv(){
+	dragElement(photoHeader, photoDiv );
+}
+
+function checkBottom() {
+// console.log(photoDiv.offsetTop, photoDiv.offsetHeight, window.innerHeight);
+	var currentHeight = photoDiv.offsetHeight;
+	var bottomSpace = window.innerHeight - (photoDiv.offsetTop + currentHeight) -20;
+	var ratio = (currentHeight + bottomSpace) / currentHeight;
+	var newWidth = Math.floor(photoDiv.offsetWidth * ratio);
+	var newWidthTxt = newWidth+'px';
+	photoDiv.style.width = newWidthTxt;			
+	photoDiv.style.height = "auto";			
+ }
+
+img.addEventListener('load', (event) => {
+ //           console.log('img has been loaded!');
+			checkBottom();
+		});
+
+bPrevPoint.onclick = () => {
+	if (currentImageIndex > 0) {
+		currentImageIndex--;
+	}	
+	if (prevNextMode) {
+		managePrevNext(prev_apiUrl);
+	} else {
+		const _feature = calques[seqNum].layerJson.features[currentImageIndex];
+		manageItem(_feature, true);
+	}
+}
+
+var prevNextMode = false;
+	
+bNextPoint.onclick = () => {
+	if (currentImageIndex < currentCollectionCount) {
+		currentImageIndex++;
+	}
+	if (prevNextMode) {
+		managePrevNext(next_apiUrl);
+	} else {
+		const _feature = calques[seqNum].layerJson.features[currentImageIndex];
+		manageItem(_feature, true);
+	}
+}
+
+async function managePrevNext(apiUrl) {
+///	console.log("apiUrl", apiUrl);
+//  this take more time (500 ms) than direct call 
+	const res = await fetch(apiUrl);
+	const data = await res.json();
+	manageItem(data, false);
+}
+	
+async function manageItem(_feature, checkSeq) {
+    const imgIndex = await updateCollection(_feature, checkSeq);	
+	if (imgIndex < 0) {
+		prevNextMode = true;
+	}
+	else {
+		prevNextMode = false;
+	}
+	currentImageIndex = imgIndex;
+///	console.log("imgIndex", imgIndex,"  collection count", calques[seqNum].layerJson.features.length);
+	const nextLink = _feature.links.find(obj => obj?.rel === "next");
+	if (nextLink) {
+		next_apiUrl = nextLink.href; 
+		bNextPoint.disabled = false;
+	} else { 
+		bNextPoint.disabled = true;
+	}
+	const prevLink = _feature.links.find(obj => obj?.rel === "prev");
+	if (prevLink) {
+		prev_apiUrl = prevLink.href;
+		bPrevPoint.disabled = false;
+	} else { 
+		bPrevPoint.disabled = true;
+	}
+
+	showImage(_feature);
+	showSelectedPoint(_feature);	
+	if (!nextLink || !prevLink) {		
+		pxImportAround(200); // show other points around
+	}
+}
+
+function showImage(_feature) {
+		photoDiv.style.display = "block";	
+		img.src = _feature.assets.sd.href;
+///	console.log("img", _feature.assets.sd);
+}
+
+var azimuthPtr = L.polyline([], {color: 'red'}).addTo(map);
+
+function showSelectedPoint(_feature) {
+	// set marker on selected point in the sequence
+	calques[seqNum].layer.eachLayer(function (subLayer) { 	
+		if (subLayer.feature.id == _feature.id) {
+			subLayer.setStyle(styleSelected);
+		} else {
+			subLayer.setStyle(style2);		
+		}
+	});	
+	// build azimuth pointer
+	const azimuth = _feature.properties["view:azimuth"];
+	const ptLngLat = _feature.geometry.coordinates;
+	if (azimuth) {
+		const longueur = 50 * Math.pow(2, 17 - map.getZoom());
+		const polyL = buildPolyLine(_feature.geometry.coordinates, azimuth, longueur);
+		azimuthPtr.setLatLngs(polyL);
+	}
+	// set current point on last panox point
+	curPt_latlng.lat = ptLngLat[1];
+	curPt_latlng.lng = ptLngLat[0];
+	
+}
+
+function pxClear() {
+	calques[panoxNum].clearLayer();
+	calques[seqNum].clearLayer();
+
+}
+
+/*
+function showImageByNum(imageIndex) {
+	try {
+		var imgFeature = calques[seqNum].layerJson.features[imageIndex];
+///		console.log(imageIndex, imgFeature);
+		manageItem(imgFeature);
+	} catch {
+		console.log("erreur sans doute séquences trop longues");
+	}
+}
+*/
+ async function pxImportAround(boxSize) {
+	osmMode = "panox";
+	const dataJson = await px_getFeaturesAround(coordsStr(), boxSize);
+///	console.log(dataJson);
+	updateCalque(panoxNum, dataJson);
+	updateCalque(seqNum, {"features":[]});// notjin to add but set calque seq above calque panox
+}
+
+ async function pxImportBox() {
+	osmMode = "panox";
+	const bbxStr = bboxStr(map.getBounds());
+	const dataJson = await px_getFeaturesBbox(bbxStr);
+///	console.log(dataJson);
+	updateCalque(panoxNum, dataJson);
+}
+
+async function updateCollection(_feature, checkSeq){
+	var imgIndex = -1;
+	var dataJson;
+	const newCollectionId = _feature.collection;
+	if (checkSeq && newCollectionId != currentCollectionId) {
+///	console.log("collection changed - old", currentCollectionId," - new  ", newCollectionId)		
+		currentCollectionId = newCollectionId;
+		calques[seqNum].clearLayer();
+		dataJson = await px_getFeaturesInCollection(currentCollectionId);
+		updateCalque(panoxNum, dataJson);
+		updateCalque(seqNum, dataJson);
+		currentCollectionCount = dataJson.features.length; 
+	    imgIndex = dataJson.features.findIndex(checkId);
+	} else {
+		dataJson = calques[seqNum].layerJson;
+	    imgIndex = dataJson.features.findIndex(checkId);
+	}
+	function checkId(_f) {
+		return (_f.id == _feature.id);
+	}	
+///	console.log(imgIndex);
+	return imgIndex;
+}
+
+// endregion
+
 // region file
 
 document.getElementById('file_selectX').addEventListener('change', handleFileSelect, false);
@@ -1578,7 +1776,7 @@ function read_File(_file) {
 	reader.onload = function (evt) {	//onload : lecture terminée ok
 		input_Text = evt.target.result;
 		var layerJson = toJsonObj(input_Text);
-		updateCalque(layerJson);
+		updateCalque(calqueIndex, layerJson);
 	}
 }
 
@@ -1936,39 +2134,42 @@ function saveGpx() {
 
 // endregion
 
+b_test.onclick = test1;
 
-b_test.onclick = test;
-function test() {
-console.log(wptNodes);
+function test1() {
+///	console.log("collection", calques[seqNum].layerJson);
+	prevNextMode = !prevNextMode;
+}
+
+async function test() {
+var colId = "3ce69743-1145-4d7f-996e-927da309eaca";  // RN102 : 
+//var colId = "55c51472-14d5-4a10-ae30-41e1a07bd886"; //vinobre 
+
+    const url = `https://api.panoramax.xyz/api/collections/${colId}/items?limit=1000`;
+    const res = await fetch(url);
+    const data = await res.json();
+console.log("col", data);
+
+//		var imgFeature = calques[seqNum].layerJson.features[currentImageIndex];
+//		console.log(imgFeature);
+///map.fitBounds(polyLine.getBounds());
+//	px_getFeaturesInCollection(collection_id);
+//	px_getCollection("12ade388-09b5-407b-af30-c832b6879757");
+/*var box = map.getBounds();
+	callPx_bbJs(box);
+var tmpStr = bboxStr(box);;
+console.log(tmpStr);
+tmpStr = bboxAround(coordsStr(), 1000);
+console.log(tmpStr);
+
+callPanox(tmpStr);
 //geoFindMe();
-//saveData();
+//saveData();*/
+
 }
 
 var statusTxt =	document.getElementById("statusTxt");
 
-
 // region poub
-
-/*var showCount = 0;
-function show_overlayVis() {
-	showCount++;
-	var str = showCount + ' [' + overlaysVis + ']';
-	document.getElementById("statusTxt").innerHTML = str;
-}
-
-function formattedTime1(date) {
-	 // Hours part from the timestamp
-	var hours = date.getHours();
-	// Minutes part from the timestamp
-	var minutes = "0" + date.getMinutes();
-	// Seconds part from the timestamp
-	var seconds = "0" + date.getSeconds();
-	// Will display time in 10:30:23 format
-	var formattedTimeStr = hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
-	console.log(date_format(date,'H:i:s')); // 12:00:54
-	return formattedTimeStr;
-}
- 
-*/
 
 // endregion
